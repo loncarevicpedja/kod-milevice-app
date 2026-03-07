@@ -29,7 +29,20 @@ async function getAddons(): Promise<AddonRow[]> {
     console.error("Admin dodaci error:", error);
     return [];
   }
-  return (data ?? []) as AddonRow[];
+  const rows = (data ?? []) as Array<{
+    id: number;
+    name: string;
+    price: number | string;
+    is_active: boolean;
+    taste_type_id: number | null;
+    taste_type: { name: string } | { name: string }[] | null;
+  }>;
+  return rows.map((row) => ({
+    ...row,
+    taste_type: Array.isArray(row.taste_type)
+      ? row.taste_type[0] ?? null
+      : row.taste_type,
+  })) as AddonRow[];
 }
 
 async function getTasteTypes() {

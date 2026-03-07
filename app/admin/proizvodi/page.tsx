@@ -41,7 +41,33 @@ async function getProducts(): Promise<ProductRow[]> {
     console.error("Admin proizvodi error:", error);
     return [];
   }
-  return (data ?? []) as ProductRow[];
+  type Rel = { name: string } | { name: string }[] | null;
+  const rows = (data ?? []) as Array<{
+    id: number;
+    name: string;
+    description: string | null;
+    price: number;
+    image_url: string | null;
+    is_active: boolean;
+    product_type_id: number;
+    taste_type_id: number | null;
+    product_category_id: number;
+    product_type: Rel;
+    taste_type: Rel;
+    product_category: Rel;
+  }>;
+  return rows.map((row) => ({
+    ...row,
+    product_type: Array.isArray(row.product_type)
+      ? row.product_type[0] ?? null
+      : row.product_type,
+    taste_type: Array.isArray(row.taste_type)
+      ? row.taste_type[0] ?? null
+      : row.taste_type,
+    product_category: Array.isArray(row.product_category)
+      ? row.product_category[0] ?? null
+      : row.product_category,
+  })) as ProductRow[];
 }
 
 async function getProductTypes() {

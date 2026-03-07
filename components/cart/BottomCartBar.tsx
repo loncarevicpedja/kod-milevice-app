@@ -30,7 +30,7 @@ export function BottomCartBar() {
           </div>
           <Link
             href="/korpa"
-            className="mr-2 inline-flex items-center justify-center rounded-xl bg-sky px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky/90"
+            className="mr-2 inline-flex items-center justify-center rounded-xl bg-sky px-4 py-3 text-sm font-semibold text-brown-soft transition hover:bg-sky/90"
           >
             Pregledaj korpu
           </Link>

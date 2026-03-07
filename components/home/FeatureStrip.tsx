@@ -23,12 +23,10 @@ export function FeatureStrip() {
     <section className="mt-8">
       <h2 className="sr-only">Zašto Kod Milevice</h2>
       <div className="grid grid-cols-3 gap-3">
-        {features.map((item, i) => (
+        {features.map((item) => (
           <div
             key={item.label}
-            className={`flex flex-col items-center rounded-2xl p-3 shadow-sm ring-1 ${
-              i === 1 ? "bg-sky/30 ring-sky/50" : "bg-white ring-sky/30"
-            }`}
+            className="flex flex-col items-center rounded-2xl bg-white p-3 shadow-sm ring-1 ring-sky/30"
           >
             <div className="relative mb-2 h-16 w-16">
               <Image

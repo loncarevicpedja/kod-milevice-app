@@ -18,6 +18,50 @@ export type AddonRow = {
   taste_type: { name: string } | null;
 };
 
+type Rel = { name: string } | { name: string }[] | null;
+
+export function normalizeProductRows(
+  rows: Array<{
+    id: number;
+    name: string;
+    description: string | null;
+    price: number;
+    image_url: string | null;
+    product_type?: Rel;
+    taste_type?: Rel;
+    product_category?: Rel;
+  }>
+): ProductRow[] {
+  return rows.map((row) => ({
+    ...row,
+    product_type: Array.isArray(row.product_type)
+      ? row.product_type[0] ?? null
+      : row.product_type ?? null,
+    taste_type: Array.isArray(row.taste_type)
+      ? row.taste_type[0] ?? null
+      : row.taste_type ?? null,
+    product_category: Array.isArray(row.product_category)
+      ? row.product_category[0] ?? null
+      : row.product_category ?? null,
+  }));
+}
+
+export function normalizeAddonRows(
+  rows: Array<{
+    id: number;
+    name: string;
+    price: number | string;
+    taste_type?: Rel;
+  }>
+): AddonRow[] {
+  return rows.map((row) => ({
+    ...row,
+    taste_type: Array.isArray(row.taste_type)
+      ? row.taste_type[0] ?? null
+      : row.taste_type ?? null,
+  }));
+}
+
 export function isPancake(row: ProductRow) {
   return row.product_type?.name.toLowerCase().includes("pala") ?? false;
 }

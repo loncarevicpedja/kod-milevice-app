@@ -38,7 +38,29 @@ async function getProducts(): Promise<ProductRow[]> {
     return [];
   }
 
-  return data as ProductRow[];
+  type Rel = { name: string } | { name: string }[] | null;
+  const rows = (data ?? []) as Array<{
+    id: number;
+    name: string;
+    description: string | null;
+    price: number;
+    image_url: string | null;
+    product_type: Rel;
+    taste_type: Rel;
+    product_category: Rel;
+  }>;
+  return rows.map((row) => ({
+    ...row,
+    product_type: Array.isArray(row.product_type)
+      ? row.product_type[0] ?? null
+      : row.product_type,
+    taste_type: Array.isArray(row.taste_type)
+      ? row.taste_type[0] ?? null
+      : row.taste_type,
+    product_category: Array.isArray(row.product_category)
+      ? row.product_category[0] ?? null
+      : row.product_category,
+  })) as ProductRow[];
 }
 
 async function getAddons(): Promise<AddonRow[]> {
@@ -60,7 +82,19 @@ async function getAddons(): Promise<AddonRow[]> {
     return [];
   }
 
-  return data as AddonRow[];
+  type Rel = { name: string } | { name: string }[] | null;
+  const rows = (data ?? []) as Array<{
+    id: number;
+    name: string;
+    price: number | string;
+    taste_type: Rel;
+  }>;
+  return rows.map((row) => ({
+    ...row,
+    taste_type: Array.isArray(row.taste_type)
+      ? row.taste_type[0] ?? null
+      : row.taste_type,
+  })) as AddonRow[];
 }
 
 function Section({

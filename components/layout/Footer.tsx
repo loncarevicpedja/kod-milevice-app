@@ -42,7 +42,7 @@ export function Footer() {
             <Link
               href="https://instagram.com"
               target="_blank"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-sky text-white shadow-md transition hover:bg-sky/90"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-sky text-brown-soft shadow-md transition hover:bg-sky/90"
               aria-label="Instagram profil"
             >
               <span className="text-lg font-semibold">IG</span>

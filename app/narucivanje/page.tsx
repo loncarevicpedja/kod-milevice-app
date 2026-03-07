@@ -9,6 +9,8 @@ import {
   categoryKey,
   type ProductRow,
   type AddonRow,
+  normalizeProductRows,
+  normalizeAddonRows,
 } from "@/lib/menuUtils";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 
@@ -81,8 +83,10 @@ export default function NarucivanjePage() {
       ]);
 
       if (cancelled) return;
-      if (!prodRes.error) setProducts((prodRes.data as ProductRow[]) ?? []);
-      if (!addonRes.error) setAddons((addonRes.data as AddonRow[]) ?? []);
+      if (!prodRes.error)
+        setProducts(normalizeProductRows((prodRes.data ?? []) as Parameters<typeof normalizeProductRows>[0]));
+      if (!addonRes.error)
+        setAddons(normalizeAddonRows((addonRes.data ?? []) as Parameters<typeof normalizeAddonRows>[0]));
       setLoading(false);
     }
 
