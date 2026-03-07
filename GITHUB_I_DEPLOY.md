@@ -59,13 +59,17 @@ GitHub više ne prihvata običnu lozinku za push. Moraš da koristiš **Personal
 
 ### Environment variables na Vercel-u
 
-Posle prvog deploya idi u **Project → Settings → Environment Variables** i dodaj iste vrednosti kao u `.env.local`:
+**Obavezno:** Bez ovih varijabli build na Vercel-u pada („supabaseUrl is required“).
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+Posle kreiranja projekta (ili pre prvog Deploy) idi u **Project → Settings → Environment Variables** i dodaj (vrednosti kao u `.env.local`):
+
+- `NEXT_PUBLIC_SUPABASE_URL` – URL tvog Supabase projekta
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` – anon key iz Supabase → Settings → API
 - `ADMIN_SECRET`
 - `RESTAURANT_EMAIL`
 - `RESEND_API_KEY`
+
+Za svaku varijablu ostavi štiklirano **Production**, **Preview** i **Development** (ili bar Production i Preview), da build uvek ima pristup.
 
 Zatim **Redeploy** (Deployments → tri tačkice na poslednjem deployu → Redeploy).
 
