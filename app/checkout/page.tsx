@@ -162,13 +162,18 @@ export default function CheckoutPage() {
             <input
               className="w-full rounded-xl border border-rose/20 bg-cream/40 px-3 py-2 text-sm outline-none focus:border-rose focus:ring-1 focus:ring-rose/60"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) =>
+                setPhone(e.target.value.replace(/[^0-9]/g, ""))
+              }
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="npr. 0641234567"
             />
           </div>
         </div>
       </section>
 
-      <section className="rounded-3xl bg-cream/80 p-4 shadow-sm ring-1 ring-rose/10">
+      <section className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-rose/10">
         <h2 className="text-sm font-semibold text-brown-soft">
           Pregled troškova
         </h2>

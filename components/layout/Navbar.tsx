@@ -25,8 +25,8 @@ export function Navbar() {
             <Image
               src="/images/logo.jpg"
               alt="Kod Milevice logo"
-              width={40}
-              height={40}
+              width={52}
+              height={52}
               className="rounded-full border-2 border-sky/60 bg-white shadow-sm"
             />
           </Link>
@@ -36,9 +36,9 @@ export function Navbar() {
           <Image
             src="/images/natpis.png"
             alt="Kod Milevice"
-            width={220}
-            height={55}
-            className="h-14 w-auto sm:h-16"
+            width={200}
+            height={50}
+            className="h-10 w-auto sm:h-12"
           />
         </div>
 

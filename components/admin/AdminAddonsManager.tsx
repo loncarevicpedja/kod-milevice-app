@@ -97,8 +97,8 @@ export function AdminAddonsManager({
         </button>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <table className="min-w-full text-left text-sm">
+      <div className="mt-6 overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+        <table className="min-w-[700px] text-left text-sm">
           <thead className="border-b border-gray-200 bg-gray-50">
             <tr>
               <th className="px-4 py-3 font-semibold text-gray-800">ID</th>
