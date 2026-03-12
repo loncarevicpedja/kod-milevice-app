@@ -3,8 +3,8 @@ import Link from "next/link";
 export function Footer() {
   return (
     <footer className="mt-12 border-t border-sky/30 bg-sky/10">
-      <div className="main-container flex flex-col gap-6 py-8 md:flex-row md:items-start md:justify-between">
-        <div>
+      <div className="main-container flex flex-col gap-6 py-8 md:flex-row md:items-stretch md:justify-between">
+        <div className="md:flex md:flex-col md:justify-between">
           <h3 className="text-lg font-semibold text-brown-soft">Kod Milevice</h3>
           <p className="mt-2 text-sm text-brown-soft/80">
             Domaće palačinke i tortilje, pripremljene po porudžbini.
@@ -31,39 +31,72 @@ export function Footer() {
 
         </div>
 
-        <div>
+        <div className="md:flex md:flex-col md:justify-between">
           <h4 className="text-sm font-semibold text-brown-soft">Pratite nas</h4>
-          
-          <div className="mt-3 flex items-center gap-3">
+
+          <div className="mt-3 flex w-full justify-evenly gap-4 md:mt-6 md:flex-1 md:flex-col md:items-center md:justify-evenly md:gap-6">
             <Link
               href="https://instagram.com"
               target="_blank"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-sky text-brown-soft shadow-md transition hover:bg-sky/90"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-sky text-brown-soft shadow-md transition hover:bg-sky/90"
               aria-label="Instagram profil"
             >
-              <span className="text-lg font-semibold">IG</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="h-6 w-6"
+                aria-hidden="true"
+              >
+                <rect
+                  x="3"
+                  y="3"
+                  width="18"
+                  height="18"
+                  rx="5"
+                  ry="5"
+                  className="fill-brown-soft"
+                />
+                <circle cx="12" cy="12" r="4" className="fill-sky" />
+                <circle cx="17" cy="7" r="1.3" className="fill-sky" />
+              </svg>
             </Link>
-          </div>
 
-          <div className="mt-3 flex items-center gap-3">
             <Link
               href="https://tiktok.com"
               target="_blank"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-sky text-brown-soft shadow-md transition hover:bg-sky/90"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-sky text-brown-soft shadow-md transition hover:bg-sky/90"
               aria-label="TikTok profil"
             >
-              <span className="text-lg font-semibold">TT</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="h-6 w-6"
+                aria-hidden="true"
+              >
+                <path
+                  d="M16 5.5c.6 1.1 1.6 1.9 2.8 2.1V10c-1.3-.1-2.5-.6-3.6-1.4v5.5a4.9 4.9 0 1 1-4.9-4.9V11a2.5 2.5 0 1 0 2.5 2.5V4h3.2v1.5z"
+                  className="fill-brown-soft"
+                />
+              </svg>
             </Link>
-          </div>
 
-          <div className="mt-3 flex items-center gap-3">
             <Link
               href="https://facebook.com"
               target="_blank"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-sky text-brown-soft shadow-md transition hover:bg-sky/90"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-sky text-brown-soft shadow-md transition hover:bg-sky/90"
               aria-label="Facebook profil"
             >
-              <span className="text-lg font-semibold">FB</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="h-6 w-6"
+                aria-hidden="true"
+              >
+                <path
+                  d="M13.5 21v-7h2.3l.4-2.8h-2.7V9c0-.8.2-1.3 1.4-1.3h1.4V5.2C15.9 5.1 15 5 14 5c-2.3 0-3.9 1.4-3.9 4v2.2H8v2.8h2.1v7h3.4z"
+                  className="fill-brown-soft"
+                />
+              </svg>
             </Link>
           </div>
         </div>

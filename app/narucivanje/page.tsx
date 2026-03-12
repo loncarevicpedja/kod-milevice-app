@@ -136,6 +136,23 @@ export default function NarucivanjePage() {
 
   const hasAnyProducts = sections.some((s) => s.products.length > 0);
 
+  function canGoToStep(targetStep: Step) {
+    if (targetStep === 0) return true;
+
+    if (!type) return false;
+
+    if (targetStep === 1) {
+      return type === "palacinke";
+    }
+
+    if (targetStep === 2) {
+      if (type === "tortilje") return true;
+      return !!taste;
+    }
+
+    return true;
+  }
+
   return (
     <div className="space-y-6">
       <header className="mt-2 flex items-center justify-between gap-2">
@@ -151,18 +168,23 @@ export default function NarucivanjePage() {
           {progressSteps.map((item, idx) => {
             const isCurrent = idx === currentProgressStep;
             const isPast = type === "tortilje" ? idx < currentProgressStep : idx < step;
+            const isEnabled = canGoToStep(item.step);
             return (
               <button
                 key={item.step}
                 type="button"
-                onClick={() => goToStep(item.step)}
+                onClick={() => {
+                  if (!isEnabled) return;
+                  goToStep(item.step);
+                }}
+                disabled={!isEnabled}
                 className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                   isCurrent
                     ? "bg-rose text-white shadow-md"
                     : isPast
                       ? "bg-rose/20 text-brown-soft hover:bg-rose/30"
                       : "bg-cream/80 text-brown-soft/50"
-                }`}
+                } ${!isEnabled ? "cursor-not-allowed opacity-50 hover:bg-cream/80" : ""}`}
               >
                 {item.label}
               </button>
@@ -192,8 +214,16 @@ export default function NarucivanjePage() {
                 setType("palacinke");
                 setStep(1);
               }}
-              className="flex flex-col items-center rounded-3xl bg-cream/80 p-4 text-sm font-semibold text-brown-soft shadow-sm hover:bg-cream"
+              className="flex flex-col items-center gap-3 rounded-3xl bg-cream/80 p-4 text-sm font-semibold text-brown-soft shadow-sm hover:bg-cream"
             >
+              <div className="relative h-20 w-full max-w-[120px] overflow-hidden rounded-full bg-white/70">
+                <Image
+                  src="/images/palacinke.png"
+                  alt="Palačinke"
+                  fill
+                  className="object-cover"
+                />
+              </div>
               Palačinke
             </button>
             <button
@@ -202,8 +232,16 @@ export default function NarucivanjePage() {
                 setType("tortilje");
                 setStep(2);
               }}
-              className="flex flex-col items-center rounded-3xl bg-cream/80 p-4 text-sm font-semibold text-brown-soft shadow-sm hover:bg-cream"
+              className="flex flex-col items-center gap-3 rounded-3xl bg-cream/80 p-4 text-sm font-semibold text-brown-soft shadow-sm hover:bg-cream"
             >
+              <div className="relative h-20 w-full max-w-[120px] overflow-hidden rounded-full bg-white/70">
+                <Image
+                  src="/images/tortilje.png"
+                  alt="Tortilje"
+                  fill
+                  className="object-cover"
+                />
+              </div>
               Tortilje
             </button>
           </div>
@@ -222,8 +260,16 @@ export default function NarucivanjePage() {
                 setTaste("slane");
                 setStep(2);
               }}
-              className="rounded-3xl bg-cream/80 p-4 font-semibold text-brown-soft shadow-sm hover:bg-cream"
+              className="flex flex-col items-center gap-3 rounded-3xl bg-cream/80 p-4 font-semibold text-brown-soft shadow-sm hover:bg-cream"
             >
+              <div className="relative h-20 w-full max-w-[120px] overflow-hidden rounded-full bg-white/70">
+                <Image
+                  src="/images/palacinke.png"
+                  alt="Slane palačinke"
+                  fill
+                  className="object-cover"
+                />
+              </div>
               Slane
             </button>
             <button
@@ -232,8 +278,16 @@ export default function NarucivanjePage() {
                 setTaste("slatke");
                 setStep(2);
               }}
-              className="rounded-3xl bg-cream/80 p-4 font-semibold text-brown-soft shadow-sm hover:bg-cream"
+              className="flex flex-col items-center gap-3 rounded-3xl bg-cream/80 p-4 font-semibold text-brown-soft shadow-sm hover:bg-cream"
             >
+              <div className="relative h-20 w-full max-w-[120px] overflow-hidden rounded-full bg-white/70">
+                <Image
+                  src="/images/palacinke.png"
+                  alt="Slatke palačinke"
+                  fill
+                  className="object-cover"
+                />
+              </div>
               Slatke
             </button>
           </div>
