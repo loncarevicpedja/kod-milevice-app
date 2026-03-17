@@ -43,16 +43,16 @@ export async function notifyRestaurantOrder(
     .map((item) => {
       const addons =
         item.addons.length > 0
-          ? ` (+ ${item.addons.map((a) => `${a.name}`).join(", ")})`
+          ? ` + ${item.addons.map((a) => a.name).join(", ")}`
           : "";
       const lineTotal =
         (item.basePrice +
           item.addons.reduce((s, a) => s + a.price, 0)) *
         item.quantity;
       const noteLine = item.note ? `\n   Napomena: ${item.note}` : "";
-      return `• ${item.name} × ${item.quantity} – ${lineTotal.toFixed(
+      return `•  ${item.quantity} x ${item.name}${addons} – ${lineTotal.toFixed(
         0,
-      )} RSD${addons}${noteLine}`;
+      )} RSD${noteLine}`;
     })
     .join("\n");
 
