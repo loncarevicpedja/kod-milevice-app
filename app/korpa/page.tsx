@@ -4,7 +4,14 @@ import { useCart } from "@/components/cart/CartContext";
 import Link from "next/link";
 
 export default function KorpaPage() {
-  const { items, totalPrice, updateQuantity, removeItem } = useCart();
+  const {
+    items,
+    totalPrice,
+    updateQuantity,
+    updateOrderNote,
+    orderNote,
+    removeItem,
+  } = useCart();
 
   if (items.length === 0) {
     return (
@@ -63,11 +70,6 @@ export default function KorpaPage() {
                       {item.addons.map((a) => a.name).join(", ")}
                     </p>
                   )}
-                  {item.note && (
-                    <p className="mt-1 text-xs text-brown-soft/70">
-                      Napomena: {item.note}
-                    </p>
-                  )}
                 </div>
                 <button
                   type="button"
@@ -112,6 +114,18 @@ export default function KorpaPage() {
           );
         })}
       </div>
+
+      <section className="rounded-2xl bg-white/90 p-4 shadow-sm ring-1 ring-rose/10">
+        <h2 className="text-sm font-semibold text-brown-soft">
+          Napomena uz porudžbinu (opciono)
+        </h2>
+        <textarea
+          rows={3}
+          className="mt-2 w-full rounded-xl border border-rose/20 bg-cream/40 px-3 py-2 text-xs outline-none focus:border-rose focus:ring-1 focus:ring-rose/50"
+          value={orderNote}
+          onChange={(e) => updateOrderNote(e.target.value)}
+        />
+      </section>
 
       <div className="mt-4 rounded-2xl bg-brown-soft p-4 text-cream">
         <div className="flex items-center justify-between text-sm">

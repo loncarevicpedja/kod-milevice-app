@@ -8,7 +8,8 @@ type OrderPayload = {
   phone: string;
   address: string | null;
   deliveryType: string;
-  note: string | null;
+  noteForAddress: string | null;
+  orderNote: string | null;
   totalPrice: number;
   items: CartItem[];
 };
@@ -33,7 +34,9 @@ export async function notifyRestaurantOrder(
   const deliveryLabel =
     payload.deliveryType === "dostava" ? "Dostava" : "Lično preuzimanje";
   const addressLine = payload.address
-    ? `Adresa: ${payload.address}${payload.note ? ` (${payload.note})` : ""}`
+    ? `Adresa: ${payload.address}${
+        payload.noteForAddress ? ` (${payload.noteForAddress})` : ""
+      }`
     : "Lično preuzimanje – bez adrese.";
 
   const itemsList = payload.items
@@ -42,9 +45,20 @@ export async function notifyRestaurantOrder(
         item.addons.length > 0
           ? ` (+ ${item.addons.map((a) => `${a.name}`).join(", ")})`
           : "";
-      return `• ${item.name} × ${item.quantity} – ${(item.basePrice + item.addons.reduce((s, a) => s + a.price, 0)) * item.quantity} RSD${addons}`;
+      const lineTotal =
+        (item.basePrice +
+          item.addons.reduce((s, a) => s + a.price, 0)) *
+        item.quantity;
+      const noteLine = item.note ? `\n   Napomena: ${item.note}` : "";
+      return `• ${item.name} × ${item.quantity} – ${lineTotal.toFixed(
+        0,
+      )} RSD${addons}${noteLine}`;
     })
     .join("\n");
+
+  const orderNoteBlock = payload.orderNote
+    ? `<h3>Napomena</h3><p>${payload.orderNote}</p>`
+    : "";
 
   const html = `
     <h2>Nova porudžbina #${payload.orderId}</h2>
@@ -55,6 +69,7 @@ export async function notifyRestaurantOrder(
     <p><strong>${addressLine}</strong></p>
     <h3>Stavke</h3>
     <pre style="font-family: sans-serif; white-space: pre-wrap;">${itemsList}</pre>
+    ${orderNoteBlock}
     <p><strong>Ukupno: ${payload.totalPrice.toFixed(0)} RSD</strong></p>
   `;
 

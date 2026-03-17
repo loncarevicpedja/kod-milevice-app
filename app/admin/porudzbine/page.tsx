@@ -8,7 +8,8 @@ type OrderRow = {
   phone: string;
   address: string | null;
   delivery_type: string;
-  note: string | null;
+  note_for_address: string | null;
+  order_note: string | null;
   total_price: number;
   status: string;
   created_at: string;
@@ -18,7 +19,7 @@ async function getOrders(): Promise<OrderRow[]> {
   const { data, error } = await supabase
     .from("order")
     .select(
-      "id, order_number, customer_name, phone, address, delivery_type, note, total_price, status, created_at"
+      "id, order_number, customer_name, phone, address, delivery_type, note_for_address, order_note, total_price, status, created_at"
     )
     .order("created_at", { ascending: false });
 

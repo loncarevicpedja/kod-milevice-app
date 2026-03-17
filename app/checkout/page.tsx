@@ -10,7 +10,7 @@ const DELIVERY_FEE = 200;
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, totalPrice, clearCart } = useCart();
+  const { items, totalPrice, orderNote, clearCart } = useCart();
   const [mode, setMode] = useState<Mode>("delivery");
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
@@ -50,6 +50,7 @@ export default function CheckoutPage() {
           deliveryFee: deliveryCost,
           totalPrice: finalTotal,
           items,
+          orderNote: orderNote.trim() || null,
         }),
       });
 

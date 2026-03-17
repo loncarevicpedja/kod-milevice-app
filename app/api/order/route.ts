@@ -12,6 +12,7 @@ type Body = {
   deliveryFee: number;
   totalPrice: number;
   items: CartItem[];
+  orderNote: string | null;
 };
 
 export async function POST(request: Request) {
@@ -34,10 +35,11 @@ export async function POST(request: Request) {
       phone: body.phone,
       address: body.mode === "delivery" ? body.address : null,
       delivery_type: body.mode === "delivery" ? "dostava" : "licno_preuzimanje",
-      note:
+      note_for_address:
         body.mode === "delivery" && body.apartment
           ? `Stan: ${body.apartment}`
           : null,
+      order_note: body.orderNote,
       total_price: body.totalPrice,
       status: "pending",
     })
@@ -116,10 +118,11 @@ export async function POST(request: Request) {
       address: body.mode === "delivery" ? body.address : null,
       deliveryType:
         body.mode === "delivery" ? "dostava" : "licno_preuzimanje",
-      note:
+      noteForAddress:
         body.mode === "delivery" && body.apartment
           ? `Stan: ${body.apartment}`
           : null,
+      orderNote: body.orderNote,
       totalPrice: body.totalPrice,
       items: body.items,
     });
