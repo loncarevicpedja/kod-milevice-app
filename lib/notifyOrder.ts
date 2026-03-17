@@ -57,20 +57,37 @@ export async function notifyRestaurantOrder(
     .join("\n");
 
   const orderNoteBlock = payload.orderNote
-    ? `<h3>Napomena</h3><p>${payload.orderNote}</p>`
+    ? `
+    <div style="margin-top:16px;padding:12px;border-radius:8px;border:1px solid #e11d48;background:#fff7fb;">
+      <h3 style="margin:0 0 8px 0;font-size:14px;color:#b91c1c;">Napomena</h3>
+      <p style="margin:0;font-size:13px;white-space:pre-wrap;">${payload.orderNote}</p>
+    </div>
+  `
     : "";
 
   const html = `
-    <h2>Nova porudžbina #${payload.orderId}</h2>
-    <p><strong>Broj porudžbine:</strong> ${payload.orderNumber}</p>
-    <p><strong>Način:</strong> ${deliveryLabel}</p>
-    <p><strong>Ime i prezime:</strong> ${payload.customerName}</p>
-    <p><strong>Telefon:</strong> <a href="tel:${payload.phone}">${payload.phone}</a></p>
-    <p><strong>${addressLine}</strong></p>
-    <h3>Stavke</h3>
-    <pre style="font-family: sans-serif; white-space: pre-wrap;">${itemsList}</pre>
-    ${orderNoteBlock}
-    <p><strong>Ukupno: ${payload.totalPrice.toFixed(0)} RSD</strong></p>
+    <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size:14px; color:#1f2933;">
+      <h2 style="margin:0 0 8px 0;">Nova porudžbina #${payload.orderId}</h2>
+      <p style="margin:4px 0;"><strong>Broj porudžbine:</strong> ${payload.orderNumber}</p>
+      <p style="margin:4px 0;"><strong>Način:</strong> ${deliveryLabel}</p>
+      <p style="margin:4px 0;"><strong>Ime i prezime:</strong> ${payload.customerName}</p>
+      <p style="margin:4px 0;">
+        <strong>Telefon:</strong>
+        <a href="tel:${payload.phone}" style="color:#e11d48;text-decoration:none;">${payload.phone}</a>
+      </p>
+      <p style="margin:4px 0;"><strong>${addressLine}</strong></p>
+
+      <hr style="margin:16px 0;border:none;border-top:1px solid #e5e7eb;" />
+
+      <h3 style="margin:0 0 8px 0;">Stavke</h3>
+      <pre style="margin:0;padding:8px 10px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; white-space:pre-wrap;">${itemsList}</pre>
+
+      ${orderNoteBlock}
+
+      <hr style="margin:16px 0;border:none;border-top:1px solid #e5e7eb;" />
+
+      <p style="margin:0;font-size:15px;"><strong>Ukupno: ${payload.totalPrice.toFixed(0)} RSD</strong></p>
+    </div>
   `;
 
   await resend.emails.send({
