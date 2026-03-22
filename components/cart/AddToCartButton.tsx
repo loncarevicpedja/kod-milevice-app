@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useCart, type CartAddon } from "./CartContext";
+import { useRestaurantSettings } from "@/components/settings/RestaurantSettingsContext";
 
 type Props = {
   productId: number;
@@ -19,8 +20,17 @@ export function AddToCartButton({
   availableAddons = [],
 }: Props) {
   const { addItem } = useCart();
+  const {
+    settings,
+    isOrderingOpen,
+    loading: settingsLoading,
+    closedMessage,
+  } = useRestaurantSettings();
+
+  const cartDisabledBySettings = !settings.menu_cart_enabled;
   const [isAdding, setIsAdding] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [closedModalOpen, setClosedModalOpen] = useState(false);
   const [selectedAddonIds, setSelectedAddonIds] = useState<Set<number>>(
     () => new Set(),
   );
@@ -31,6 +41,10 @@ export function AddToCartButton({
   }
 
   function handleAdd() {
+    if (!settingsLoading && !isOrderingOpen) {
+      setClosedModalOpen(true);
+      return;
+    }
     if (isClassic && availableAddons.length > 0) {
       setSelectedAddonIds(new Set());
       setDialogOpen(true);
@@ -60,6 +74,12 @@ export function AddToCartButton({
   }
 
   function confirmAddWithAddons() {
+    if (cartDisabledBySettings) return;
+    if (!settingsLoading && !isOrderingOpen) {
+      setDialogOpen(false);
+      setClosedModalOpen(true);
+      return;
+    }
     const addons =
       availableAddons.filter((addon) => selectedAddonIds.has(addon.id)) ?? [];
 
@@ -78,11 +98,38 @@ export function AddToCartButton({
     <>
       <button
         type="button"
+        disabled={settingsLoading || cartDisabledBySettings}
+        title={
+          cartDisabledBySettings
+            ? "Dodavanje u korpu je isključeno (samo pregled menija)."
+            : undefined
+        }
         onClick={handleAdd}
-        className="relative inline-flex items-center justify-center rounded-full bg-rose px-4 py-2 text-xs font-semibold text-white shadow-md shadow-rose/40 transition hover:bg-rose/90"
+        className={`relative inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold shadow-md transition ${
+          cartDisabledBySettings || settingsLoading
+            ? "cursor-not-allowed bg-brown-soft/25 text-brown-soft/70 shadow-none"
+            : "bg-rose text-white shadow-rose/40 hover:bg-rose/90"
+        }`}
       >
-        <span className={isAdding ? "animate-bounce" : ""}>Dodaj u korpu</span>
+        <span className={isAdding ? "animate-bounce" : ""}>
+          {cartDisabledBySettings ? "Samo pregled" : "Dodaj u korpu"}
+        </span>
       </button>
+
+      {closedModalOpen && closedMessage && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-5">
+          <div className="max-w-sm rounded-3xl bg-white p-5 text-center shadow-xl">
+            <p className="text-sm text-brown-soft">{closedMessage}</p>
+            <button
+              type="button"
+              onClick={() => setClosedModalOpen(false)}
+              className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-rose px-5 py-2 text-sm font-semibold text-white"
+            >
+              Razumem
+            </button>
+          </div>
+        </div>
+      )}
 
       {dialogOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-5">

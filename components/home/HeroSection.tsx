@@ -1,7 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import { OrderNowCta } from "@/components/order/OrderNowCta";
 
-export function HeroSection() {
+export function HeroSection({
+  deliveryFeeRsd,
+}: {
+  deliveryFeeRsd?: number;
+} = {}) {
   return (
     <section className="mt-4 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-sky/20 md:flex md:items-center md:gap-8">
       <div className="relative mx-auto mb-4 h-44 w-full max-w-md overflow-hidden rounded-3xl bg-sky/20 ring-1 ring-sky/30 md:mb-0 md:flex-1">
@@ -25,12 +30,7 @@ export function HeroSection() {
           Brza dostava širom Pančeva.
         </p>
         <div className="mt-4 flex flex-nowrap items-center gap-2 sm:gap-3">
-          <Link
-            href="/narucivanje"
-            className="flex-1 min-w-0 inline-flex items-center justify-center rounded-full bg-rose px-4 py-2.5 text-xs font-semibold text-white shadow-md transition hover:bg-rose/90 sm:flex-none sm:px-6 sm:text-sm"
-          >
-            Naruči odmah
-          </Link>
+          <OrderNowCta className="flex-1 min-w-0 inline-flex items-center justify-center rounded-full bg-rose px-4 py-2.5 text-xs font-semibold text-white shadow-md transition hover:bg-rose/90 sm:flex-none sm:px-6 sm:text-sm" />
           <Link
             href="/menu"
             className="flex-1 min-w-0 inline-flex items-center justify-center rounded-full bg-sky px-4 py-2.5 text-xs font-semibold text-brown-soft shadow-md transition hover:bg-sky/90 sm:flex-none sm:px-5 sm:text-sm"

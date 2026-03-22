@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ContactHoursLines } from "@/components/contact/ContactHoursLines";
 
 export function Footer() {
   return (
@@ -25,8 +26,7 @@ export function Footer() {
           
           <div className="mt-3 space-y-1 text-sm text-brown-soft/80">
             <p className="text-lg font-semibold text-brown-soft">Radno vreme:</p>
-            <p>Pon - pet: 12:00 - 23:00</p>
-            <p>Sub - ned: 14:00 - 23:00</p>
+            <ContactHoursLines />
           </div>
 
         </div>

@@ -3,14 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart/CartContext";
+import { useRestaurantSettings } from "@/components/settings/RestaurantSettingsContext";
 
 type Mode = "delivery" | "pickup";
-
-const DELIVERY_FEE = 200;
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, totalPrice, orderNote, clearCart } = useCart();
+  const { settings, loading: settingsLoading, isOrderingOpen, closedMessage } =
+    useRestaurantSettings();
   const [mode, setMode] = useState<Mode>("delivery");
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
@@ -20,11 +21,16 @@ export default function CheckoutPage() {
   const [message, setMessage] = useState<string | null>(null);
 
   const hasItems = items.length > 0;
-  const deliveryCost = mode === "delivery" ? DELIVERY_FEE : 0;
+  const deliveryCost = mode === "delivery" ? settings.delivery_fee_rsd : 0;
   const finalTotal = totalPrice + deliveryCost;
 
   async function handleSubmit() {
     if (!hasItems) return;
+
+    if (!settingsLoading && !isOrderingOpen) {
+      alert(closedMessage ?? "Trenutno nije moguće naručiti.");
+      return;
+    }
 
     if (!name.trim() || !phone.trim()) {
       alert("Molimo popunite obavezna polja.");
@@ -55,8 +61,18 @@ export default function CheckoutPage() {
       });
 
       if (!res.ok) {
-        console.error(await res.text());
-        alert("Došlo je do greške prilikom slanja porudžbine.");
+        let errText = "";
+        try {
+          const j = (await res.json()) as { error?: string };
+          errText = j.error ?? "";
+        } catch {
+          errText = await res.text();
+        }
+        console.error(errText);
+        alert(
+          errText ||
+            "Došlo je do greške prilikom slanja porudžbine.",
+        );
         return;
       }
 
@@ -64,12 +80,15 @@ export default function CheckoutPage() {
 
       clearCart();
       if (mode === "delivery") {
+        const eta =
+          settings.prep_time_minutes + settings.delivery_extra_minutes;
         setMessage(
-          "Hvala na porudžbini!\n\nVaša porudžbina je uspešno poslata.\n\nOčekivano vreme dostave:\n25 minuta",
+          `Hvala na porudžbini!\n\nVaša porudžbina je uspešno poslata.\n\nOčekivano vreme dostave:\noko ${eta} minuta (priprema ${settings.prep_time_minutes} min + dostava ~${settings.delivery_extra_minutes} min)`,
         );
       } else {
+        const prep = settings.prep_time_minutes;
         setMessage(
-          `Hvala na porudžbini!\n\nVaša porudžbina je uspešno poslata.\n\nBroj Vaše porudžbine je:\n\n#${data.orderId}`,
+          `Hvala na porudžbini!\n\nVaša porudžbina je uspešno poslata.\n\nBroj porudžbine: #${data.orderId}\n\nPribližno vreme pripreme: oko ${prep} minuta.\nPorudžbinu možete preuzeti na adresi: Dr Žarka Fogaraša 1, Pančevo.`,
         );
       }
     } finally {
@@ -186,19 +205,23 @@ export default function CheckoutPage() {
           {mode === "delivery" && (
             <div className="flex justify-between">
               <span>Cena dostave</span>
-              <span>{deliveryCost.toFixed(0)} RSD</span>
+              <span>
+                {settingsLoading ? "…" : `${deliveryCost.toFixed(0)} RSD`}
+              </span>
             </div>
           )}
           <div className="mt-2 flex justify-between border-t border-rose/20 pt-2 font-semibold">
             <span>Ukupno</span>
-            <span>{finalTotal.toFixed(0)} RSD</span>
+            <span>
+              {settingsLoading ? "…" : `${finalTotal.toFixed(0)} RSD`}
+            </span>
           </div>
         </div>
       </section>
 
       <button
         type="button"
-        disabled={!hasItems || submitting}
+        disabled={!hasItems || submitting || settingsLoading}
         onClick={handleSubmit}
         className="mb-4 inline-flex w-full items-center justify-center rounded-xl bg-rose px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-rose/40 disabled:cursor-not-allowed disabled:bg-rose/50"
       >

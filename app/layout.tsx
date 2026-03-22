@@ -5,6 +5,11 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { CartProvider } from "@/components/cart/CartContext";
 import { BottomCartBar } from "@/components/cart/BottomCartBar";
+import { RestaurantSettingsProvider } from "@/components/settings/RestaurantSettingsContext";
+import { getCachedRestaurantSettings } from "@/lib/getCachedRestaurantSettings";
+
+/** Uvek sveže podešavanja iz baze (bez statičkog HTML keša za ceo sajt). */
+export const dynamic = "force-dynamic";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -74,19 +79,23 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const restaurantSettings = await getCachedRestaurantSettings();
+
   return (
     <html lang="sr">
       <body className={`${poppins.variable} antialiased bg-cream`}>
         <CartProvider>
-          <Navbar />
-          <main className="main-container py-6 pb-20">{children}</main>
-          <Footer />
-          <BottomCartBar />
+          <RestaurantSettingsProvider initialSettings={restaurantSettings}>
+            <Navbar />
+            <main className="main-container py-6 pb-20">{children}</main>
+            <Footer />
+            <BottomCartBar />
+          </RestaurantSettingsProvider>
         </CartProvider>
       </body>
     </html>

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { MenuCartNotice } from "@/components/menu/MenuCartNotice";
 import {
   type ProductRow,
   type AddonRow,
@@ -230,6 +231,7 @@ export default async function MenuPage({
       <p className="mt-1 text-sm text-brown-soft/80">
         Odaberi omiljenu kombinaciju – sve pripremamo tek kada naručiš.
       </p>
+      <MenuCartNotice />
 
       {(filterType === null || showOnlyPancakes) && (
       <section className="mt-6">

@@ -100,7 +100,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeItem: (id) => {
         setItems((current) => current.filter((item) => item.id !== id));
       },
-      clearCart: () => setItems([]),
+      clearCart: () => {
+        setItems([]);
+        setOrderNote("");
+      },
     };
   }, [items, orderNote]);
 

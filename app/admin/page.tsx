@@ -9,6 +9,11 @@ const links = [
     desc: "Product type, ukus, kategorija",
   },
   { href: "/admin/porudzbine", label: "Porudžbine", desc: "Pregled i status" },
+  {
+    href: "/admin/podesavanja",
+    label: "Podešavanja",
+    desc: "Cena dostave, radno vreme pon–pet i vikend, vremena",
+  },
 ];
 
 export default function AdminDashboardPage() {

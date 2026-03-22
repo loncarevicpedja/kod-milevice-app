@@ -2,6 +2,7 @@
 
 import { useCart } from "@/components/cart/CartContext";
 import Link from "next/link";
+import { OrderNowCta } from "@/components/order/OrderNowCta";
 
 export default function KorpaPage() {
   const {
@@ -28,12 +29,7 @@ export default function KorpaPage() {
           >
             Idi na meni
           </Link>
-          <Link
-            href="/narucivanje"
-            className="rounded-full border border-rose/50 px-5 py-2 text-sm font-semibold text-rose"
-          >
-            Naruči odmah
-          </Link>
+          <OrderNowCta className="rounded-full border border-rose/50 px-5 py-2 text-sm font-semibold text-rose" />
         </div>
       </div>
     );
@@ -138,7 +134,7 @@ export default function KorpaPage() {
           href="/checkout"
           className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-rose px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-rose/40"
         >
-          Nastavi na checkout
+          Nastavi dalje 
         </Link>
       </div>
     </div>

@@ -1,3 +1,5 @@
+import { ContactHoursLines } from "@/components/contact/ContactHoursLines";
+
 export default function KontaktPage() {
   return (
     <div className="space-y-6">
@@ -20,8 +22,7 @@ export default function KontaktPage() {
             <span className="font-semibold">Radno vreme:</span> 
           </p>
           <div>
-            <p>Pon - pet: 12:00 - 23:00</p>
-            <p>Sub - ned: 14:00 - 23:00</p>
+            <ContactHoursLines />
           </div>
         </div>
       </section>

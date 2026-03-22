@@ -65,6 +65,7 @@ Posle kreiranja projekta (ili pre prvog Deploy) idi u **Project → Settings →
 
 - `NEXT_PUBLIC_SUPABASE_URL` – URL tvog Supabase projekta
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` – anon key iz Supabase → Settings → API
+- **`SUPABASE_SERVICE_ROLE_KEY`** – **service_role** ključ (Supabase → Settings → API). **Samo na serveru** – dodaj u Vercel i `.env.local`, **nemoj** `NEXT_PUBLIC_` prefiks. **Potreban je i za upis i za čitanje** tabele `restaurant_settings`: sa običnim (anon) ključem RLS često dozvoli upis preko API-ja ali **ne i SELECT**, pa forma i sajt vide „podrazumevana” stara vremena iako je baza tačna.
 - `ADMIN_SECRET`
 - `RESTAURANT_EMAIL`
 - `RESEND_API_KEY`
@@ -76,3 +77,15 @@ Zatim **Redeploy** (Deployments → tri tačkice na poslednjem deployu → Redep
 ---
 
 **Napomena:** `.env.local` se ne pushuje na GitHub (već je u `.gitignore`), zato moraš ručno da uneseš env varijable u Vercel-u.
+
+### Supabase: tabela `restaurant_settings` (key / value)
+
+Za cenu dostave, radno vreme i vremena koristi se tabela **`restaurant_settings`**: svaki **ključ** (`delivery_fee_rsd`, `weekday_work_start`, `weekend_work_end`, …) je **jedan red**, kolone su **`key`**, **`value`**, **`updated_at`**. Radno vreme za naručivanje je odvojeno za **pon–pet** i za **sub–ned**.
+
+1. U Supabase otvori **SQL Editor**.
+2. Pokreni **`supabase/restaurant_settings.sql`** (jednom).
+3. Ako si ranije kreirao **staru** verziju ove tabele (jedan red sa više kolona), u SQL skripti je u komentaru naredba **`drop table`** – otkomentariši je pre pokretanja ili obriši tabelu ručno, pa ponovo pokreni skriptu.
+
+Posle toga u admin panelu: **Podešavanja** (`/admin/podesavanja`).
+
+Ako pri čuvanju vidiš grešku **„new row violates row-level security policy”**, proveri da je **`SUPABASE_SERVICE_ROLE_KEY`** postavljen (i **Redeploy** na Vercel-u posle dodavanja). Više u `supabase/restaurant_settings_rls_note.sql`.

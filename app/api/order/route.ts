@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
 import type { CartItem } from "@/components/cart/CartContext";
 import { notifyRestaurantOrder } from "@/lib/notifyOrder";
+import { getRestaurantSettingsFromDb } from "@/lib/restaurantSettingsDb";
+import {
+  closedReasonMessage,
+  getOrderingClosedReason,
+} from "@/lib/restaurantHours";
 
 type Body = {
   mode: "delivery" | "pickup";
@@ -21,6 +26,46 @@ export async function POST(request: Request) {
   if (!body.items?.length) {
     return NextResponse.json(
       { error: "Cart is empty" },
+      { status: 400 },
+    );
+  }
+
+  const settings = await getRestaurantSettingsFromDb();
+  const closed = getOrderingClosedReason(new Date(), settings);
+  if (closed) {
+    return NextResponse.json(
+      {
+        error: closedReasonMessage(closed, new Date(), settings),
+        code: "ORDERING_CLOSED",
+        reason: closed,
+      },
+      { status: 403 },
+    );
+  }
+
+  let itemsSubtotal = 0;
+  for (const item of body.items) {
+    const addonsTotal = item.addons.reduce((s, a) => s + a.price, 0);
+    itemsSubtotal += (item.basePrice + addonsTotal) * item.quantity;
+  }
+
+  const expectedDeliveryFee =
+    body.mode === "delivery" ? settings.delivery_fee_rsd : 0;
+  const expectedTotal = itemsSubtotal + expectedDeliveryFee;
+
+  if (Math.round(expectedTotal) !== Math.round(body.totalPrice)) {
+    return NextResponse.json(
+      {
+        error: "Ukupan iznos se ne poklapa sa trenutnim cenama. Osveži stranicu i pokušaj ponovo.",
+        code: "PRICE_MISMATCH",
+      },
+      { status: 400 },
+    );
+  }
+
+  if (body.mode === "delivery" && body.deliveryFee !== expectedDeliveryFee) {
+    return NextResponse.json(
+      { error: "Cena dostave nije ispravna.", code: "DELIVERY_FEE_MISMATCH" },
       { status: 400 },
     );
   }
@@ -109,25 +154,33 @@ export async function POST(request: Request) {
     }
   }
 
-  try {
-    await notifyRestaurantOrder({
-      orderId,
-      orderNumber,
-      customerName: body.name,
-      phone: body.phone,
-      address: body.mode === "delivery" ? body.address : null,
-      deliveryType:
-        body.mode === "delivery" ? "dostava" : "licno_preuzimanje",
-      noteForAddress:
-        body.mode === "delivery" && body.apartment
-          ? `Stan: ${body.apartment}`
-          : null,
-      orderNote: body.orderNote,
-      totalPrice: body.totalPrice,
-      items: body.items,
-    });
-  } catch (err) {
-    console.error("Failed to send order notification email:", err);
+  if (settings.order_email_enabled) {
+    try {
+      await notifyRestaurantOrder({
+        orderId,
+        orderNumber,
+        customerName: body.name,
+        phone: body.phone,
+        address: body.mode === "delivery" ? body.address : null,
+        deliveryType:
+          body.mode === "delivery" ? "dostava" : "licno_preuzimanje",
+        noteForAddress:
+          body.mode === "delivery" && body.apartment
+            ? `Stan: ${body.apartment}`
+            : null,
+        orderNote: body.orderNote,
+        itemsSubtotal,
+        deliveryFee: expectedDeliveryFee,
+        totalPrice: body.totalPrice,
+        items: body.items,
+      });
+    } catch (err) {
+      console.error("Failed to send order notification email:", err);
+    }
+  } else if (process.env.NODE_ENV === "development") {
+    console.log(
+      `[order] Email rezerva isključena (order_email_enabled=false) – samo baza/POS; porudžbina #${orderId}`,
+    );
   }
 
   return NextResponse.json({ orderId }, { status: 201 });

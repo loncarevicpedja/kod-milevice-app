@@ -13,6 +13,7 @@ import {
   normalizeAddonRows,
 } from "@/lib/menuUtils";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { MenuCartNotice } from "@/components/menu/MenuCartNotice";
 
 type Step = 0 | 1 | 2;
 
@@ -200,6 +201,8 @@ export default function NarucivanjePage() {
           ×
         </button>
       </header>
+
+      <MenuCartNotice />
 
       {step === 0 && (
         <section className="rounded-3xl bg-white/90 p-5 shadow-sm ring-1 ring-rose/10">

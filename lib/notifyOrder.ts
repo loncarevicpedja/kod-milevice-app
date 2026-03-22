@@ -10,6 +10,10 @@ type OrderPayload = {
   deliveryType: string;
   noteForAddress: string | null;
   orderNote: string | null;
+  /** Zbir stavki (bez dostave) */
+  itemsSubtotal: number;
+  /** 0 ako je lično preuzimanje */
+  deliveryFee: number;
   totalPrice: number;
   items: CartItem[];
 };
@@ -31,8 +35,8 @@ export async function notifyRestaurantOrder(
 
   const resend = new Resend(apiKey);
 
-  const deliveryLabel =
-    payload.deliveryType === "dostava" ? "Dostava" : "Lično preuzimanje";
+  const isDelivery = payload.deliveryType === "dostava";
+  const deliveryLabel = isDelivery ? "Dostava" : "Lično preuzimanje";
   const addressLine = payload.address
     ? `Adresa: ${payload.address}${
         payload.noteForAddress ? ` (${payload.noteForAddress})` : ""
@@ -86,7 +90,27 @@ export async function notifyRestaurantOrder(
 
       <hr style="margin:16px 0;border:none;border-top:1px solid #e5e7eb;" />
 
-      <p style="margin:0;font-size:15px;"><strong>Ukupno: ${payload.totalPrice.toFixed(0)} RSD</strong></p>
+      <h3 style="margin:0 0 8px 0;">Plaćanje</h3>
+      <table style="width:100%;max-width:360px;border-collapse:collapse;font-size:14px;">
+        <tr>
+          <td style="padding:6px 0;border-bottom:1px solid #e5e7eb;">Cena narudžbine</td>
+          <td style="padding:6px 0;border-bottom:1px solid #e5e7eb;text-align:right;">${payload.itemsSubtotal.toFixed(0)} RSD</td>
+        </tr>
+        ${
+          isDelivery && payload.deliveryFee > 0
+            ? `<tr>
+          <td style="padding:6px 0;border-bottom:1px solid #e5e7eb;">Dostava <span style="color:#6b7280;font-size:12px;"></span></td>
+          <td style="padding:6px 0;border-bottom:1px solid #e5e7eb;text-align:right;">${payload.deliveryFee.toFixed(0)} RSD</td>
+        </tr>`
+            : `<tr>
+          <td colspan="2" style="padding:6px 0;border-bottom:1px solid #e5e7eb;color:#6b7280;font-size:12px;">Lično preuzimanje – bez naknade za dostavu.</td>
+        </tr>`
+        }
+        <tr>
+          <td style="padding:10px 0 0 0;"><strong>Ukupno za naplatu</strong></td>
+          <td style="padding:10px 0 0 0;text-align:right;"><strong>${payload.totalPrice.toFixed(0)} RSD</strong></td>
+        </tr>
+      </table>
     </div>
   `;
 
