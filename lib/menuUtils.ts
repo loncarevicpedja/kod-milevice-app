@@ -235,7 +235,7 @@ export function getFilteredSections(
     }));
   }
 
-  const pancakes = products.filter(isPancake);
+  const pancakes =  products.filter(isPancake);
   const savory = pancakes.filter(isSavory);
   const sweet = pancakes.filter(isSweet);
 
