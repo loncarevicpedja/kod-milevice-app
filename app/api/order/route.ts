@@ -7,6 +7,7 @@ import {
   closedReasonMessage,
   getOrderingClosedReason,
 } from "@/lib/restaurantHours";
+import { validateOrderAddonSlots } from "@/lib/validateOrderAddonSlots";
 
 type Body = {
   mode: "delivery" | "pickup";
@@ -66,6 +67,14 @@ export async function POST(request: Request) {
   if (body.mode === "delivery" && body.deliveryFee !== expectedDeliveryFee) {
     return NextResponse.json(
       { error: "Cena dostave nije ispravna.", code: "DELIVERY_FEE_MISMATCH" },
+      { status: 400 },
+    );
+  }
+
+  const slotError = await validateOrderAddonSlots(body.items);
+  if (slotError) {
+    return NextResponse.json(
+      { error: slotError, code: "ADDON_SLOT_INVALID" },
       { status: 400 },
     );
   }

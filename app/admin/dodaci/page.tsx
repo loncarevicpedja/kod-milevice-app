@@ -7,6 +7,7 @@ type AddonRow = {
   price: number | string;
   is_active: boolean;
   taste_type_id: number | null;
+  addon_kind: string | null;
   taste_type: { name: string } | null;
 };
 
@@ -20,6 +21,7 @@ async function getAddons(): Promise<AddonRow[]> {
       price,
       is_active,
       taste_type_id,
+      addon_kind,
       taste_type:taste_type_id ( name )
     `
     )
@@ -35,6 +37,7 @@ async function getAddons(): Promise<AddonRow[]> {
     price: number | string;
     is_active: boolean;
     taste_type_id: number | null;
+    addon_kind: string | null;
     taste_type: { name: string } | { name: string }[] | null;
   }>;
   return rows.map((row) => ({

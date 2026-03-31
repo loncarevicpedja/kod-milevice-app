@@ -32,8 +32,22 @@ export type Addon = {
   id: number;
   name: string;
   taste_type_id: number | null;
+  addon_kind: string | null;
   price: number;
   is_active: boolean;
+};
+
+export type ProductAddonSlot = {
+  id: number;
+  product_id: number;
+  sort_order: number;
+  label: string;
+  max_select: number;
+};
+
+export type ProductAddonSlotAddon = {
+  slot_id: number;
+  addon_id: number;
 };
 
 export type Order = {

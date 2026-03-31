@@ -37,13 +37,9 @@ export function BestSellersSection() {
                 className="object-contain transition-transform group-hover:scale-105"
               />
             </div>
-            <p className="mt-2 text-center text-sm font-semibold text-brown-soft">
-              {item.title}
-            </p>
           </Link>
         ))}
       </div>
     </section>
   );
 }
-

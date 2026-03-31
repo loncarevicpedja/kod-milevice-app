@@ -9,10 +9,13 @@ import {
   isTortilla,
   isSweet,
   isSavory,
-  categoryKey,
   isSweetAddon,
   isSavoryAddon,
   toCartAddons,
+  normalizeProductRows,
+  groupProductsByCategory,
+  isRezanciCategoryProduct,
+  isClassicPancakeCategory,
 } from "@/lib/menuUtils";
 import type { CartAddon } from "@/components/cart/CartContext";
 
@@ -26,9 +29,25 @@ async function getProducts(): Promise<ProductRow[]> {
       description,
       price,
       image_url,
+      product_category_id,
       product_type:product_type_id ( name ),
       taste_type:taste_type_id ( name ),
-      product_category:product_category_id ( name )
+      product_category:product_category_id ( name ),
+      product_addon_slot (
+        id,
+        sort_order,
+        label,
+        max_select,
+        product_addon_slot_addon (
+          addon_id,
+          addon (
+            id,
+            name,
+            price,
+            is_active
+          )
+        )
+      )
     `,
     )
     .eq("is_active", true)
@@ -39,29 +58,9 @@ async function getProducts(): Promise<ProductRow[]> {
     return [];
   }
 
-  type Rel = { name: string } | { name: string }[] | null;
-  const rows = (data ?? []) as Array<{
-    id: number;
-    name: string;
-    description: string | null;
-    price: number;
-    image_url: string | null;
-    product_type: Rel;
-    taste_type: Rel;
-    product_category: Rel;
-  }>;
-  return rows.map((row) => ({
-    ...row,
-    product_type: Array.isArray(row.product_type)
-      ? row.product_type[0] ?? null
-      : row.product_type,
-    taste_type: Array.isArray(row.taste_type)
-      ? row.taste_type[0] ?? null
-      : row.taste_type,
-    product_category: Array.isArray(row.product_category)
-      ? row.product_category[0] ?? null
-      : row.product_category,
-  })) as ProductRow[];
+  return normalizeProductRows(
+    (data ?? []) as Parameters<typeof normalizeProductRows>[0],
+  );
 }
 
 async function getAddons(): Promise<AddonRow[]> {
@@ -72,6 +71,7 @@ async function getAddons(): Promise<AddonRow[]> {
       id,
       name,
       price,
+      addon_kind,
       taste_type:taste_type_id ( name )
     `,
     )
@@ -88,6 +88,7 @@ async function getAddons(): Promise<AddonRow[]> {
     id: number;
     name: string;
     price: number | string;
+    addon_kind: string | null;
     taste_type: Rel;
   }>;
   return rows.map((row) => ({
@@ -157,7 +158,10 @@ function Section({
                   productId={p.id}
                   name={p.name}
                   basePrice={p.price}
-                  isClassic={isClassicSection && categoryKey(p) === "classic-palacinke"}
+                  addonSlots={
+                    p.addonSlots.length > 0 ? p.addonSlots : undefined
+                  }
+                  isClassic={isClassicSection}
                   availableAddons={
                     isClassicSection ? availableAddons : undefined
                   }
@@ -177,41 +181,31 @@ export default async function MenuPage({
   searchParams: Promise<{ type?: string }>;
 }) {
   const params = await searchParams;
-  const filterType = params.type === "tortilje" ? "tortilje" : params.type === "palacinke" ? "palacinke" : null;
+  const filterType =
+    params.type === "tortilje"
+      ? "tortilje"
+      : params.type === "palacinke"
+        ? "palacinke"
+        : null;
 
   const [products, addons] = await Promise.all([
     getProducts(),
     getAddons(),
   ]);
 
-  const pancakes = products.filter(isPancake);
+  const pancakes = products
+    .filter(isPancake)
+    .filter((p) => !isRezanciCategoryProduct(p));
   const tortillas = products.filter(isTortilla);
+  const rezanci = products.filter(isRezanciCategoryProduct);
 
   const pancakeSavory = pancakes.filter(isSavory);
   const pancakeSweet = pancakes.filter(isSweet);
 
-  const groupedPancakeSavory = {
-    classic: pancakeSavory.filter(
-      (p) => categoryKey(p) === "classic-palacinke",
-    ),
-    mega: pancakeSavory.filter((p) => categoryKey(p) === "mega-palacinke"),
-    mix: pancakeSavory.filter((p) => categoryKey(p) === "mix-palacinke"),
-  };
-
-  const groupedPancakeSweet = {
-    classic: pancakeSweet.filter(
-      (p) => categoryKey(p) === "classic-palacinke",
-    ),
-    mega: pancakeSweet.filter((p) => categoryKey(p) === "mega-palacinke"),
-    mix: pancakeSweet.filter((p) => categoryKey(p) === "mix-palacinke"),
-  };
-
-  const classicTortilla = tortillas.filter(
-    (p) => categoryKey(p) === "classic-tortilla",
-  );
-  const obrokTortilla = tortillas.filter(
-    (p) => categoryKey(p) === "obrok-tortilla",
-  );
+  const savorySections = groupProductsByCategory(pancakeSavory);
+  const sweetSections = groupProductsByCategory(pancakeSweet);
+  const tortillaSections = groupProductsByCategory(tortillas);
+  const rezanciSections = groupProductsByCategory(rezanci);
 
   const sweetAddons = toCartAddons(addons.filter(isSweetAddon));
   const savoryAddons = toCartAddons(addons.filter(isSavoryAddon));
@@ -226,7 +220,7 @@ export default async function MenuPage({
           ? "Palačinke"
           : showOnlyTortillas
             ? "Tortilje"
-            : "Meni palačinki i tortilja"}
+            : "Meni"}
       </h1>
       <p className="mt-1 text-sm text-brown-soft/80">
         Odaberi omiljenu kombinaciju – sve pripremamo tek kada naručiš.
@@ -234,57 +228,73 @@ export default async function MenuPage({
       <MenuCartNotice />
 
       {(filterType === null || showOnlyPancakes) && (
-      <section className="mt-6">
-        <h2 className="text-xl font-semibold text-brown-soft">Palačinke</h2>
+        <section className="mt-6">
+          <h2 className="text-xl font-semibold text-brown-soft">Palačinke</h2>
 
-        <div className="mt-4 rounded-3xl bg-cream/70 p-4">
-          <h3 className="text-sm font-semibold text-brown-soft/90">Slane</h3>
-          <Section
-            title="Classic palačinke"
-            products={groupedPancakeSavory.classic}
-            availableAddons={savoryAddons}
-            isClassicSection
-          />
-          <Section
-            title="Mega palačinke"
-            products={groupedPancakeSavory.mega}
-          />
-          <Section
-            title="Naš mix palačinke"
-            products={groupedPancakeSavory.mix}
-          />
-        </div>
+          <div className="mt-4 rounded-3xl bg-cream/70 p-4">
+            <h3 className="text-sm font-semibold text-brown-soft/90">Slane</h3>
+            {savorySections.map((g) => {
+              const classic = isClassicPancakeCategory(g.categoryName);
+              return (
+                <Section
+                  key={`sav-${g.categoryId ?? g.categoryName}`}
+                  title={g.categoryName}
+                  products={g.products}
+                  availableAddons={classic ? savoryAddons : undefined}
+                  isClassicSection={classic}
+                />
+              );
+            })}
+          </div>
 
-        <div className="mt-6 rounded-3xl bg-cream/70 p-4">
-          <h3 className="text-sm font-semibold text-brown-soft/90">Slatke</h3>
-          <Section
-            title="Classic palačinke"
-            products={groupedPancakeSweet.classic}
-            availableAddons={sweetAddons}
-            isClassicSection
-          />
-          <Section
-            title="Mega palačinke"
-            products={groupedPancakeSweet.mega}
-          />
-          <Section
-            title="Naš mix palačinke"
-            products={groupedPancakeSweet.mix}
-          />
-        </div>
-      </section>
+          <div className="mt-6 rounded-3xl bg-cream/70 p-4">
+            <h3 className="text-sm font-semibold text-brown-soft/90">Slatke</h3>
+            {sweetSections.map((g) => {
+              const classic = isClassicPancakeCategory(g.categoryName);
+              return (
+                <Section
+                  key={`swe-${g.categoryId ?? g.categoryName}`}
+                  title={g.categoryName}
+                  products={g.products}
+                  availableAddons={classic ? sweetAddons : undefined}
+                  isClassicSection={classic}
+                />
+              );
+            })}
+          </div>
+        </section>
       )}
 
       {(filterType === null || showOnlyTortillas) && (
-      <section className="mt-8">
-        <h2 className="text-xl font-semibold text-brown-soft">Tortilje</h2>
-        <div className="mt-4 rounded-3xl bg-cream/70 p-4">
-          <Section title="Classic tortilla" products={classicTortilla} />
-          <Section title="Obrok tortilla" products={obrokTortilla} />
-        </div>
-      </section>
+        <section className="mt-8">
+          <h2 className="text-xl font-semibold text-brown-soft">Tortilje</h2>
+          <div className="mt-4 rounded-3xl bg-cream/70 p-4">
+            {tortillaSections.map((g) => (
+              <Section
+                key={`tort-${g.categoryId ?? g.categoryName}`}
+                title={g.categoryName}
+                products={g.products}
+              />
+            ))}
+          </div>
+        </section>
       )}
+
+      {(filterType === null || filterType === "palacinke") &&
+        rezanci.length > 0 && (
+          <section className="mt-8">
+            <h2 className="text-xl font-semibold text-brown-soft">Rezanci</h2>
+            <div className="mt-4 rounded-3xl bg-cream/70 p-4">
+              {rezanciSections.map((g) => (
+                <Section
+                  key={`rez-${g.categoryId ?? g.categoryName}`}
+                  title={g.categoryName}
+                  products={g.products}
+                />
+              ))}
+            </div>
+          </section>
+        )}
     </div>
   );
 }
-

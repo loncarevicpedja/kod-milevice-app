@@ -10,7 +10,7 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await _request.json();
-  const { name, price, is_active, taste_type_id } = body;
+  const { name, price, is_active, taste_type_id, addon_kind } = body;
 
   const updates: Record<string, unknown> = {};
   if (name !== undefined) updates.name = String(name).trim();
@@ -18,6 +18,9 @@ export async function PATCH(
   if (is_active !== undefined) updates.is_active = Boolean(is_active !== false);
   if (taste_type_id !== undefined)
     updates.taste_type_id = taste_type_id ? Number(taste_type_id) : null;
+  if (addon_kind !== undefined)
+    updates.addon_kind =
+      addon_kind === null || addon_kind === "" ? null : String(addon_kind);
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: "Nema podataka za izmenu" }, { status: 400 });

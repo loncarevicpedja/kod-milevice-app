@@ -3,8 +3,16 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ADDON_KIND_LABELS } from "@/lib/addonKinds";
 
 type ProductType = { id: number; name: string };
+type ProductAddonSlotForm = {
+  sort_order: number;
+  label: string;
+  max_select: number;
+  addon_ids: number[];
+};
+
 type Product = {
   id: number;
   name: string;
@@ -18,10 +26,20 @@ type Product = {
   product_type?: { name: string } | null;
   taste_type?: { name: string } | null;
   product_category?: { name: string } | null;
+  addon_slots?: ProductAddonSlotForm[];
+};
+
+type CatalogAddon = {
+  id: number;
+  name: string;
+  price: number;
+  is_active: boolean;
+  addon_kind: string | null;
 };
 
 type Props = {
   initialProducts: Product[];
+  catalogAddons: CatalogAddon[];
   productTypes: ProductType[];
   tasteTypes: ProductType[];
   productCategories: ProductType[];
@@ -29,6 +47,7 @@ type Props = {
 
 export function AdminProductsManager({
   initialProducts,
+  catalogAddons,
   productTypes,
   tasteTypes,
   productCategories,
@@ -190,7 +209,9 @@ export function AdminProductsManager({
 
       {modalOpen && (
         <ProductFormModal
+          key={editingProduct?.id ?? "new"}
           product={editingProduct}
+          catalogAddons={catalogAddons}
           productTypes={productTypes}
           tasteTypes={tasteTypes}
           productCategories={productCategories}
@@ -211,8 +232,17 @@ export function AdminProductsManager({
   );
 }
 
+type SlotEditorRow = {
+  clientKey: string;
+  sort_order: number;
+  label: string;
+  max_select: number;
+  addon_ids: number[];
+};
+
 function ProductFormModal({
   product,
+  catalogAddons,
   productTypes,
   tasteTypes,
   productCategories,
@@ -222,6 +252,7 @@ function ProductFormModal({
   setSaving,
 }: {
   product: Product | null;
+  catalogAddons: CatalogAddon[];
   productTypes: ProductType[];
   tasteTypes: ProductType[];
   productCategories: ProductType[];
@@ -246,10 +277,67 @@ function ProductFormModal({
     product?.product_category_id?.toString() ?? (productCategories[0]?.id.toString() ?? "")
   );
 
+  const initialSlots = useMemo<SlotEditorRow[]>(() => {
+    const raw = product?.addon_slots ?? [];
+    if (!raw.length) return [];
+    return raw.map((s, i) => ({
+      clientKey: `slot-${i}-${s.sort_order}`,
+      sort_order: s.sort_order,
+      label: s.label,
+      max_select: s.max_select,
+      addon_ids: [...s.addon_ids],
+    }));
+  }, [product]);
+
+  const [slots, setSlots] = useState<SlotEditorRow[]>(initialSlots);
+
+  function addSlot() {
+    setSlots((prev) => [
+      ...prev,
+      {
+        clientKey: `new-${Date.now()}-${prev.length}`,
+        sort_order: prev.length,
+        label: "",
+        max_select: 3,
+        addon_ids: [],
+      },
+    ]);
+  }
+
+  function removeSlot(clientKey: string) {
+    setSlots((prev) => prev.filter((s) => s.clientKey !== clientKey));
+  }
+
+  function updateSlot(clientKey: string, patch: Partial<SlotEditorRow>) {
+    setSlots((prev) =>
+      prev.map((s) => (s.clientKey === clientKey ? { ...s, ...patch } : s))
+    );
+  }
+
+  function toggleSlotAddon(clientKey: string, addonId: number) {
+    setSlots((prev) =>
+      prev.map((s) => {
+        if (s.clientKey !== clientKey) return s;
+        const set = new Set(s.addon_ids);
+        if (set.has(addonId)) set.delete(addonId);
+        else set.add(addonId);
+        return { ...s, addon_ids: [...set].sort((a, b) => a - b) };
+      })
+    );
+  }
+
+  const activeCatalog = catalogAddons.filter((a) => a.is_active);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !price.trim()) return;
     setSaving(true);
+    const addon_slots = slots.map((s, i) => ({
+      sort_order: i,
+      label: s.label.trim() || `Grupa ${i + 1}`,
+      max_select: Math.min(20, Math.max(1, Number(s.max_select) || 1)),
+      addon_ids: s.addon_ids,
+    }));
     const payload = {
       name: name.trim(),
       description: description.trim() || null,
@@ -259,6 +347,7 @@ function ProductFormModal({
       product_type_id: Number(productTypeId),
       taste_type_id: tasteTypeId ? Number(tasteTypeId) : null,
       product_category_id: Number(productCategoryId),
+      addon_slots,
     };
     const url = isEdit
       ? `/api/admin/products/${product.id}`
@@ -276,7 +365,7 @@ function ProductFormModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
         <h2 className="text-lg font-semibold text-gray-800">
           {isEdit ? "Izmeni proizvod" : "Dodaj proizvod"}
         </h2>
@@ -377,6 +466,110 @@ function ProductFormModal({
             />
             <span className="text-sm text-gray-700">Aktivan (prikazuje se na meniju)</span>
           </label>
+
+          <div className="border-t border-gray-200 pt-4">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-800">
+                  Dodaci po grupama (opciono)
+                </h3>
+                <p className="mt-0.5 text-xs text-gray-500">
+                  Za tortilje: npr. „Meso“ i „Namaz“, maks. izbora po grupi. Ako nema
+                  grupa, korisnik ne bira dodatke na ovom proizvodu.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={addSlot}
+                className="shrink-0 rounded-lg border border-rose/40 bg-rose/10 px-3 py-1.5 text-xs font-semibold text-rose"
+              >
+                + Grupa
+              </button>
+            </div>
+
+            {slots.length === 0 ? (
+              <p className="mt-2 text-xs text-gray-400">Nema definisanih grupa.</p>
+            ) : (
+              <div className="mt-3 space-y-4">
+                {slots.map((slot, idx) => (
+                  <div
+                    key={slot.clientKey}
+                    className="rounded-xl border border-gray-200 bg-gray-50/80 p-3"
+                  >
+                    <div className="flex flex-wrap items-end gap-2">
+                      <div className="min-w-[120px] flex-1">
+                        <label className="block text-xs font-medium text-gray-600">
+                          Naziv grupe
+                        </label>
+                        <input
+                          type="text"
+                          value={slot.label}
+                          onChange={(e) =>
+                            updateSlot(slot.clientKey, { label: e.target.value })
+                          }
+                          placeholder={idx === 0 ? "Meso" : "Namaz"}
+                          className="mt-1 w-full rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm"
+                        />
+                      </div>
+                      <div className="w-24">
+                        <label className="block text-xs font-medium text-gray-600">
+                          Max izbora
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={20}
+                          value={slot.max_select}
+                          onChange={(e) =>
+                            updateSlot(slot.clientKey, {
+                              max_select: Number(e.target.value),
+                            })
+                          }
+                          className="mt-1 w-full rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeSlot(slot.clientKey)}
+                        className="mb-0.5 text-xs text-red-600 hover:underline"
+                      >
+                        Obriši grupu
+                      </button>
+                    </div>
+                    <p className="mt-2 text-xs font-medium text-gray-600">
+                      Dodaci u ovoj grupi
+                    </p>
+                    <div className="mt-1 max-h-36 space-y-1 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2">
+                      {activeCatalog.length === 0 ? (
+                        <p className="text-xs text-gray-400">Nema aktivnih dodataka.</p>
+                      ) : (
+                        activeCatalog.map((a) => (
+                          <label
+                            key={a.id}
+                            className="flex cursor-pointer items-center gap-2 text-xs text-gray-700"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={slot.addon_ids.includes(a.id)}
+                              onChange={() => toggleSlotAddon(slot.clientKey, a.id)}
+                              className="rounded border-gray-300"
+                            />
+                            <span className="flex-1">{a.name}</span>
+                            <span className="text-gray-400">
+                              {a.addon_kind
+                                ? ADDON_KIND_LABELS[a.addon_kind] ?? a.addon_kind
+                                : ""}
+                            </span>
+                          </label>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-2 pt-4">
             <button
               type="button"

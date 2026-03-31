@@ -60,10 +60,16 @@ export default function KorpaPage() {
                   <h2 className="text-sm font-semibold text-brown-soft">
                     {item.name}
                   </h2>
-                  {item.isClassic && item.addons.length > 0 && (
+                  {item.addons.length > 0 && (
                     <p className="mt-1 text-xs text-brown-soft/70">
                       Dodaci:{" "}
-                      {item.addons.map((a) => a.name).join(", ")}
+                      {item.addons
+                        .map((a) =>
+                          a.price > 0
+                            ? `${a.name} (+${a.price.toFixed(0)} RSD)`
+                            : a.name
+                        )
+                        .join(", ")}
                     </p>
                   )}
                 </div>

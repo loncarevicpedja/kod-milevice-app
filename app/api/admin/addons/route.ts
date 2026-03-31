@@ -7,7 +7,9 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("addon")
-    .select("id, name, price, is_active, taste_type_id, taste_type:taste_type_id(name)")
+    .select(
+      "id, name, price, is_active, taste_type_id, addon_kind, taste_type:taste_type_id(name)"
+    )
     .order("name", { ascending: true });
 
   if (error) {
@@ -21,7 +23,7 @@ export async function POST(request: Request) {
   if (!(await requireAdmin())) return unauthorizedResponse();
 
   const body = await request.json();
-  const { name, price, is_active, taste_type_id } = body;
+  const { name, price, is_active, taste_type_id, addon_kind } = body;
 
   if (!name || price == null) {
     return NextResponse.json(
@@ -37,6 +39,10 @@ export async function POST(request: Request) {
       price: Number(price),
       is_active: Boolean(is_active !== false),
       taste_type_id: taste_type_id ? Number(taste_type_id) : null,
+      addon_kind:
+        addon_kind === null || addon_kind === undefined || addon_kind === ""
+          ? null
+          : String(addon_kind),
     })
     .select("id")
     .single();

@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import {
   getFilteredSections,
-  categoryKey,
   type ProductRow,
   type AddonRow,
   normalizeProductRows,
@@ -38,12 +37,7 @@ export default function NarucivanjePage() {
   const router = useRouter();
 
   const progressSteps = type === "tortilje" ? STEPS_TORTILJE : STEPS_PALACINKE;
-  const currentProgressStep =
-    type === "tortilje"
-      ? step === 0
-        ? 0
-        : 1
-      : step;
+  const currentProgressStep = type === "tortilje" ? (step === 0 ? 0 : 1) : step;
 
   useEffect(() => {
     if (step !== 2) return;
@@ -62,10 +56,26 @@ export default function NarucivanjePage() {
             description,
             price,
             image_url,
+            product_category_id,
             product_type:product_type_id ( name ),
             taste_type:taste_type_id ( name ),
-            product_category:product_category_id ( name )
-          `
+            product_category:product_category_id ( name ),
+            product_addon_slot (
+              id,
+              sort_order,
+              label,
+              max_select,
+              product_addon_slot_addon (
+                addon_id,
+                addon (
+                  id,
+                  name,
+                  price,
+                  is_active
+                )
+              )
+            )
+          `,
           )
           .eq("is_active", true)
           .order("name", { ascending: true }),
@@ -76,8 +86,9 @@ export default function NarucivanjePage() {
             id,
             name,
             price,
+            addon_kind,
             taste_type:taste_type_id ( name )
-          `
+          `,
           )
           .eq("is_active", true)
           .order("price", { ascending: true }),
@@ -85,9 +96,17 @@ export default function NarucivanjePage() {
 
       if (cancelled) return;
       if (!prodRes.error)
-        setProducts(normalizeProductRows((prodRes.data ?? []) as Parameters<typeof normalizeProductRows>[0]));
+        setProducts(
+          normalizeProductRows(
+            (prodRes.data ?? []) as Parameters<typeof normalizeProductRows>[0],
+          ),
+        );
       if (!addonRes.error)
-        setAddons(normalizeAddonRows((addonRes.data ?? []) as Parameters<typeof normalizeAddonRows>[0]));
+        setAddons(
+          normalizeAddonRows(
+            (addonRes.data ?? []) as Parameters<typeof normalizeAddonRows>[0],
+          ),
+        );
       setLoading(false);
     }
 
@@ -95,7 +114,7 @@ export default function NarucivanjePage() {
     return () => {
       cancelled = true;
     };
-  }, [step]);
+  }, [step, type, taste]);
 
   function goToStep(targetStep: Step) {
     if (targetStep === 0) {
@@ -131,7 +150,7 @@ export default function NarucivanjePage() {
           products,
           addons,
           type,
-          type === "palacinke" ? taste : null
+          type === "palacinke" ? taste : null,
         )
       : [];
 
@@ -220,7 +239,7 @@ export default function NarucivanjePage() {
             >
               <div className="relative mb-2 h-24 w-full overflow-hidden rounded-2xl">
                 <Image
-                  src="/images/palacinke.png"
+                  src="/images/palacinke.jpeg"
                   alt="Palačinke"
                   fill
                   className="object-cover"
@@ -238,7 +257,7 @@ export default function NarucivanjePage() {
             >
               <div className="relative mb-2 h-24 w-full overflow-hidden rounded-2xl">
                 <Image
-                  src="/images/tortilje.png"
+                  src="/images/tortilje.jpeg"
                   alt="Tortilje"
                   fill
                   className="object-cover"
@@ -266,7 +285,7 @@ export default function NarucivanjePage() {
             >
               <div className="relative mb-2 h-24 w-full overflow-hidden rounded-2xl">
                 <Image
-                  src="/images/tortilje.png"
+                  src="/images/cl-slana.jpeg"
                   alt="Slane palačinke"
                   fill
                   className="object-cover"
@@ -284,7 +303,7 @@ export default function NarucivanjePage() {
             >
               <div className="relative mb-2 h-24 w-full overflow-hidden rounded-2xl">
                 <Image
-                  src="/images/palacinke.png"
+                  src="/images/cl-slatka.jpeg"
                   alt="Slatke palačinke"
                   fill
                   className="object-cover"
@@ -307,7 +326,9 @@ export default function NarucivanjePage() {
           </h2>
 
           {loading ? (
-            <p className="text-sm text-brown-soft/70">Učitavanje proizvoda...</p>
+            <p className="text-sm text-brown-soft/70">
+              Učitavanje proizvoda...
+            </p>
           ) : !hasAnyProducts ? (
             <p className="text-sm text-brown-soft/70">
               Nema proizvoda u ovoj kategoriji.
@@ -317,7 +338,7 @@ export default function NarucivanjePage() {
               {sections.map(
                 (sec) =>
                   sec.products.length > 0 && (
-                    <div key={sec.title}>
+                    <div key={sec.sectionKey ?? sec.title}>
                       <h3 className="text-lg font-semibold text-brown-soft">
                         {sec.title}
                       </h3>
@@ -364,15 +385,13 @@ export default function NarucivanjePage() {
                                   productId={p.id}
                                   name={p.name}
                                   basePrice={p.price}
-                                  isClassic={
-                                    sec.isClassicSection &&
-                                    categoryKey(p) === "classic-palacinke"
-                                  }
-                                  availableAddons={
-                                    sec.isClassicSection
-                                      ? sec.availableAddons
+                                  addonSlots={
+                                    p.addonSlots.length > 0
+                                      ? p.addonSlots
                                       : undefined
                                   }
+                                  isClassic={sec.isClassicSection}
+                                  availableAddons={sec.availableAddons}
                                 />
                               </div>
                             </div>
@@ -380,7 +399,7 @@ export default function NarucivanjePage() {
                         ))}
                       </div>
                     </div>
-                  )
+                  ),
               )}
             </div>
           )}

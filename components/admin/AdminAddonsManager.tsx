@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ADDON_KIND_LABELS, ADDON_KIND_VALUES } from "@/lib/addonKinds";
 
 type Addon = {
   id: number;
@@ -10,6 +11,7 @@ type Addon = {
   price: number | string;
   is_active: boolean;
   taste_type_id: number | null;
+  addon_kind: string | null;
   taste_type?: { name: string } | null;
 };
 
@@ -104,6 +106,7 @@ export function AdminAddonsManager({
               <th className="px-4 py-3 font-semibold text-gray-800">ID</th>
               <th className="px-4 py-3 font-semibold text-gray-800">Naziv</th>
               <th className="px-4 py-3 font-semibold text-gray-800">Ukus</th>
+              <th className="px-4 py-3 font-semibold text-gray-800">Tip dodatka</th>
               <th className="px-4 py-3 font-semibold text-gray-800">Cena</th>
               <th className="px-4 py-3 font-semibold text-gray-800">Aktivan</th>
               <th className="px-4 py-3 font-semibold text-gray-800">Akcije</th>
@@ -112,7 +115,7 @@ export function AdminAddonsManager({
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-gray-500">
+                <td colSpan={7} className="px-4 py-6 text-center text-gray-500">
                   {search.trim() ? "Nema rezultata." : "Nema dodataka."}
                 </td>
               </tr>
@@ -122,6 +125,11 @@ export function AdminAddonsManager({
                   <td className="px-4 py-3 text-gray-600">{a.id}</td>
                   <td className="px-4 py-3 font-medium text-gray-800">{a.name}</td>
                   <td className="px-4 py-3 text-gray-600">{a.taste_type?.name ?? "—"}</td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {a.addon_kind
+                      ? (ADDON_KIND_LABELS[a.addon_kind] ?? a.addon_kind)
+                      : "—"}
+                  </td>
                   <td className="px-4 py-3 text-gray-600">{Number(a.price).toFixed(0)} RSD</td>
                   <td className="px-4 py-3">
                     {a.is_active ? (
@@ -219,6 +227,7 @@ function AddonFormModal({
   const [tasteTypeId, setTasteTypeId] = useState(
     addon?.taste_type_id?.toString() ?? ""
   );
+  const [addonKind, setAddonKind] = useState(addon?.addon_kind ?? "");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -229,6 +238,7 @@ function AddonFormModal({
       price: Number(price),
       is_active: isActive,
       taste_type_id: tasteTypeId ? Number(tasteTypeId) : null,
+      addon_kind: addonKind || null,
     };
     const url = isEdit
       ? `/api/admin/addons/${addon.id}`
@@ -240,8 +250,21 @@ function AddonFormModal({
       body: JSON.stringify(payload),
     });
     setSaving(false);
-    if (res.ok) onSaved();
-    else alert((await res.json()).error || "Greška");
+    if (res.ok) {
+      onSaved();
+      return;
+    }
+    const text = await res.text();
+    let message = "Greška";
+    if (text) {
+      try {
+        const j = JSON.parse(text) as { error?: string };
+        if (j.error) message = j.error;
+      } catch {
+        message = text.slice(0, 200);
+      }
+    }
+    alert(message);
   }
 
   return (
@@ -284,6 +307,22 @@ function AddonFormModal({
               {tasteTypes.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600">
+              Tip dodatka (tortilje / grupisanje)
+            </label>
+            <select
+              value={addonKind}
+              onChange={(e) => setAddonKind(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+            >
+              {ADDON_KIND_VALUES.map((v) => (
+                <option key={v || "empty"} value={v}>
+                  {ADDON_KIND_LABELS[v] ?? v}
                 </option>
               ))}
             </select>
