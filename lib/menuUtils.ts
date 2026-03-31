@@ -167,11 +167,12 @@ export function groupProductsByCategory(products: ProductRow[]): {
     products: v.products,
   }));
 
-  out.sort((a, b) =>
-    a.categoryName.localeCompare(b.categoryName, "sr-Latn", {
-      sensitivity: "base",
-    })
-  );
+  out.sort((a, b) => {
+  const aId = a.categoryId ?? 9999;
+  const bId = b.categoryId ?? 9999;
+
+  return aId - bId;
+});
   return out;
 }
 
