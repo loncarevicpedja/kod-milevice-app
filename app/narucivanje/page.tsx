@@ -91,7 +91,7 @@ export default function NarucivanjePage() {
           `,
           )
           .eq("is_active", true)
-          .order("price", { ascending: true }),
+          .order("id", { ascending: true }),
       ]);
 
       if (cancelled) return;
