@@ -30,7 +30,7 @@ export default function AboutPage() {
         </div>
         <div className="relative h-56 overflow-hidden rounded-3xl bg-cream">
           <Image
-            src="/images/palacinke.png"
+            src="/images/palacinke1.png"
             alt="Palačinke"
             fill
             className="object-contain"

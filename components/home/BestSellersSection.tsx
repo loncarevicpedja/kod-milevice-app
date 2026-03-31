@@ -3,13 +3,13 @@ import Link from "next/link";
 
 const bestsellers = [
   {
-    src: "/images/palacinke.png",
+    src: "/images/palacinke1.png",
     alt: "Palačinke",
     title: "Palačinke",
     href: "/menu?type=palacinke",
   },
   {
-    src: "/images/tortilje.png",
+    src: "/images/tortilje1.png",
     alt: "Tortilje",
     title: "Tortilje",
     href: "/menu?type=tortilje",
