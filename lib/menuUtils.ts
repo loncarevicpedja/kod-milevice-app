@@ -1,6 +1,9 @@
 import type { CartAddon } from "@/components/cart/CartContext";
+import { isClassicPancakeCategory } from "@/lib/classicPancakeCategory";
 import type { ProductAddonSlotNormalized } from "@/lib/productAddonSlots";
 import { normalizeProductAddonSlots } from "@/lib/productAddonSlots";
+
+export { isClassicPancakeCategory };
 
 export type ProductRow = {
   id: number;
@@ -84,10 +87,18 @@ export function normalizeAddonRows(
   }));
 }
 
-/** Dodaci samo za tortilje (slotovi), ne za listu classic palačinki */
-export function isTortillaOnlyAddon(row: AddonRow) {
+/**
+ * Dodaci koji se biraju samo kroz grupe na proizvodu (Meso/Namaz), ne u flat
+ * „Odaberi dodatke“ listi za classic sekciju.
+ */
+export function isSlotGroupedAddon(row: AddonRow) {
   const k = (row.addon_kind ?? "").trim();
-  return k === "tortilla_meat" || k === "tortilla_spread";
+  return (
+    k === "tortilla_meat" ||
+    k === "tortilla_spread" ||
+    k === "pancake_savory_meat" ||
+    k === "pancake_savory_spread"
+  );
 }
 
 export function isTortilla(row: ProductRow) {
@@ -117,19 +128,6 @@ export function isSavory(row: ProductRow) {
 export function isRezanciCategoryProduct(row: ProductRow) {
   const n = (row.product_category?.name ?? "").toLowerCase();
   return n.includes("rezan");
-}
-
-/**
- * „Classic“ palačinke sa izbornikom dodataka (Osnovne / staro Classic) – po nazivu kategorije.
- */
-export function isClassicPancakeCategory(categoryName: string | null | undefined) {
-  const n = (categoryName ?? "").toLowerCase();
-  const pal =
-    n.includes("palač") || n.includes("palacin") || n.includes("palačin");
-  return (
-    (n.includes("osnovn") && pal) ||
-    (n.includes("classic") && pal)
-  );
 }
 
 /** Grupisanje proizvoda po kategoriji iz baze (naslov sekcije = naziv kategorije) */
@@ -190,12 +188,12 @@ export function categoryKey(row: ProductRow) {
 }
 
 export function isSweetAddon(row: AddonRow) {
-  if (isTortillaOnlyAddon(row)) return false;
+  if (isSlotGroupedAddon(row)) return false;
   return row.taste_type?.name.toLowerCase().includes("slat") ?? false;
 }
 
 export function isSavoryAddon(row: AddonRow) {
-  if (isTortillaOnlyAddon(row)) return false;
+  if (isSlotGroupedAddon(row)) return false;
   return row.taste_type?.name.toLowerCase().includes("slan") ?? false;
 }
 
@@ -236,7 +234,7 @@ export function getFilteredSections(
     }));
   }
 
-  const pancakes =  products.filter(isPancake);
+  const pancakes = products.filter(isPancake);
   const savory = pancakes.filter(isSavory);
   const sweet = pancakes.filter(isSweet);
 

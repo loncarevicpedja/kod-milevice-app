@@ -79,13 +79,19 @@ export async function validateOrderAddonSlots(
       }
     }
 
+    /** Nema nijedne veze slot–dodatak: ne primenjuj slot pravila (npr. samo „standardni“ dodaci). */
+    if (addonToSlot.size === 0) {
+      continue;
+    }
+
     const countBySlot = new Map<number, number>();
     for (const addon of item.addons) {
       const meta = addonToSlot.get(addon.id);
-      if (!meta) {
+      if (meta) {
+        countBySlot.set(meta.slotId, (countBySlot.get(meta.slotId) ?? 0) + 1);
+      } else if (!item.isClassic) {
         return `Proizvod „${item.name}”: dodatak „${addon.name}” nije dozvoljen.`;
       }
-      countBySlot.set(meta.slotId, (countBySlot.get(meta.slotId) ?? 0) + 1);
     }
 
     for (const rule of rules) {

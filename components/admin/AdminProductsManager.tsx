@@ -474,8 +474,10 @@ function ProductFormModal({
                   Dodaci po grupama (opciono)
                 </h3>
                 <p className="mt-0.5 text-xs text-gray-500">
-                  Za tortilje: npr. „Meso“ i „Namaz“, maks. izbora po grupi. Ako nema
-                  grupa, korisnik ne bira dodatke na ovom proizvodu.
+                  Za tortilje i osnovne slane palačinke: npr. „Meso“ i „Namaz“, maks.
+                  izbora po grupi. Dodatak u adminu označi vrstom „Osnovne slane – meso“
+                  ili „… namazi“ da se može automatski vezati za slot (vidi migraciju).
+                  Ako nema grupa, korisnik ne bira dodatke na ovom proizvodu.
                 </p>
               </div>
               <button

@@ -39,10 +39,10 @@ export function AddToCartButton({
   );
   const [slotChoices, setSlotChoices] = useState<Record<number, number[]>>({});
 
-  /** Ima bar jedan slot u bazi (Meso/Namaz…) – prikaži dijalog i ako su grupe prazne */
+  /** Isto kao tortilje: ako proizvod ima slotove u bazi (Meso/Namaz), uvek ih prikaži. */
   const needsSlotDialog = addonSlots.length > 0;
-  const needsClassicDialog =
-    isClassic && availableAddons.length > 0 && !needsSlotDialog;
+  const showClassicList = isClassic && availableAddons.length > 0;
+  const openAddonDialog = needsSlotDialog || showClassicList;
 
   function animate() {
     setIsAdding(true);
@@ -61,12 +61,9 @@ export function AddToCartButton({
       setClosedModalOpen(true);
       return;
     }
-    if (needsSlotDialog) {
-      openSlotDialog();
-      return;
-    }
-    if (needsClassicDialog) {
-      setSelectedAddonIds(new Set());
+    if (openAddonDialog) {
+      if (needsSlotDialog) openSlotDialog();
+      if (showClassicList) setSelectedAddonIds(new Set());
       setDialogOpen(true);
       return;
     }
@@ -119,8 +116,13 @@ export function AddToCartButton({
       return;
     }
 
+    const addons: CartAddon[] = [];
+    if (showClassicList) {
+      for (const a of availableAddons) {
+        if (selectedAddonIds.has(a.id)) addons.push({ ...a });
+      }
+    }
     if (needsSlotDialog) {
-      const addons: CartAddon[] = [];
       for (const slot of addonSlots) {
         const ids = slotChoices[slot.id] ?? [];
         for (const id of ids) {
@@ -128,20 +130,7 @@ export function AddToCartButton({
           if (a) addons.push({ id: a.id, name: a.name, price: 0 });
         }
       }
-      addItem({
-        productId,
-        name,
-        basePrice,
-        addons,
-        isClassic: false,
-      });
-      setDialogOpen(false);
-      animate();
-      return;
     }
-
-    const addons =
-      availableAddons.filter((addon) => selectedAddonIds.has(addon.id)) ?? [];
 
     addItem({
       productId,
@@ -195,16 +184,61 @@ export function AddToCartButton({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-5">
           <div className="max-h-[85vh] max-w-sm overflow-y-auto rounded-3xl bg-white p-5 shadow-xl">
             <h3 className="text-base font-semibold text-brown-soft">
-              {needsSlotDialog ? "Odaberi dodatke" : "Odaberi dodatke"}
+              Odaberi dodatke
             </h3>
             <p className="mt-1 text-xs text-brown-soft/70">
-              {needsSlotDialog
-                ? "Po grupama važi maksimalan broj izbora."
-                : "Dodaci se naplaćuju dodatno. Možeš izabrati više opcija ili preskočiti ovaj korak."}
+              {needsSlotDialog && showClassicList
+                ? "Standardni dodaci, meso i namazi."
+                : needsSlotDialog
+                  ? ""
+                  : "Dodaci se naplaćuju dodatno. Možeš izabrati više opcija ili preskočiti ovaj korak."}
             </p>
 
-            {needsSlotDialog ? (
-              <div className="mt-3 space-y-4">
+            {showClassicList && (
+              <div className="mt-3">
+                <p className="text-xs font-semibold text-brown-soft">
+                  Standardni dodaci
+                </p>
+                <p className="mt-0.5 text-[11px] text-brown-soft/60">
+                  Naplata pored stavke (RSD).
+                </p>
+                <div className="mt-2 max-h-52 space-y-2 overflow-y-auto">
+                  {availableAddons.map((addon) => (
+                    <label
+                      key={addon.id}
+                      className="flex items-center justify-between rounded-2xl bg-cream/60 px-3 py-2 text-xs"
+                    >
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-rose/50 text-rose"
+                          checked={selectedAddonIds.has(addon.id)}
+                          onChange={() => toggleAddon(addon.id)}
+                        />
+                        <span className="text-brown-soft">{addon.name}</span>
+                      </div>
+                      <span className="font-semibold text-brown-soft">
+                        {addon.price.toFixed(0)} RSD
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {needsSlotDialog && (
+              <div
+                className={
+                  showClassicList
+                    ? "mt-5 space-y-4 border-t border-rose/15 pt-4"
+                    : "mt-3 space-y-4"
+                }
+              >
+                {!showClassicList && (
+                  <p className="text-[11px] font-medium text-brown-soft/80">
+                    U cenu proizvoda (bez dodatne naplate ovde)
+                  </p>
+                )}
                 {addonSlots.map((slot) => {
                   const chosen = slotChoices[slot.id] ?? [];
                   return (
@@ -218,8 +252,8 @@ export function AddToCartButton({
                       {slot.addons.length === 0 ? (
                         <p className="mt-2 rounded-2xl bg-amber-50 px-3 py-2 text-xs text-amber-900/90">
                           U admin panelu dodeli dodatke ovoj grupi (Proizvod →
-                          grupe dodataka), ili proveri da li migracija i tip
-                          dodatka (meso / namaz) odgovaraju.
+                          grupe dodataka), ili proveri tip dodatka (tortilja /
+                          osnovne slane – meso ili namaz) i migraciju.
                         </p>
                       ) : (
                         <div className="mt-2 max-h-40 space-y-2 overflow-y-auto">
@@ -256,28 +290,6 @@ export function AddToCartButton({
                     </div>
                   );
                 })}
-              </div>
-            ) : (
-              <div className="mt-3 max-h-60 space-y-2 overflow-y-auto">
-                {availableAddons.map((addon) => (
-                  <label
-                    key={addon.id}
-                    className="flex items-center justify-between rounded-2xl bg-cream/60 px-3 py-2 text-xs"
-                  >
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 rounded border-rose/50 text-rose"
-                        checked={selectedAddonIds.has(addon.id)}
-                        onChange={() => toggleAddon(addon.id)}
-                      />
-                      <span className="text-brown-soft">{addon.name}</span>
-                    </div>
-                    <span className="font-semibold text-brown-soft">
-                      {addon.price.toFixed(0)} RSD
-                    </span>
-                  </label>
-                ))}
               </div>
             )}
 

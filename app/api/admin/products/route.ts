@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
 import { requireAdmin, unauthorizedResponse } from "@/lib/adminAuth";
 import { replaceProductAddonSlots } from "@/lib/adminProductAddonSlots";
+import { isClassicPancakeCategory } from "@/lib/classicPancakeCategory";
 import { mapProductRecordForAdmin } from "@/lib/productAddonSlots";
 
 export async function GET() {
@@ -101,11 +102,34 @@ export async function POST(request: Request) {
           .eq("id", Number(product_type_id))
           .maybeSingle();
         const typeName = pt?.name ? String(pt.name).toLowerCase() : "";
+        const defaultMesoNamaz = [
+          { sort_order: 0, label: "Meso", max_select: 3, addon_ids: [] as number[] },
+          { sort_order: 1, label: "Namaz", max_select: 3, addon_ids: [] as number[] },
+        ];
         if (typeName.includes("tort")) {
-          await replaceProductAddonSlots(supabase, newId, [
-            { sort_order: 0, label: "Meso", max_select: 3, addon_ids: [] },
-            { sort_order: 1, label: "Namaz", max_select: 3, addon_ids: [] },
+          await replaceProductAddonSlots(supabase, newId, defaultMesoNamaz);
+        } else if (
+          typeName.includes("pala") &&
+          !typeName.includes("tort") &&
+          taste_type_id
+        ) {
+          const [{ data: tt }, { data: pc }] = await Promise.all([
+            supabase
+              .from("taste_type")
+              .select("name")
+              .eq("id", Number(taste_type_id))
+              .maybeSingle(),
+            supabase
+              .from("product_category")
+              .select("name")
+              .eq("id", Number(product_category_id))
+              .maybeSingle(),
           ]);
+          const taste = tt?.name ? String(tt.name).toLowerCase() : "";
+          const cat = pc?.name ? String(pc.name) : "";
+          if (taste.includes("slan") && isClassicPancakeCategory(cat)) {
+            await replaceProductAddonSlots(supabase, newId, defaultMesoNamaz);
+          }
         }
       }
     } catch (e) {

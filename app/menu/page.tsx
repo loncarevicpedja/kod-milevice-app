@@ -209,7 +209,6 @@ export default async function MenuPage({
 
   const sweetAddons = toCartAddons(addons.filter(isSweetAddon));
   const savoryAddons = toCartAddons(addons.filter(isSavoryAddon));
-
   const showOnlyPancakes = filterType === "palacinke";
   const showOnlyTortillas = filterType === "tortilje";
 
