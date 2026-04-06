@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { PUBLIC_TORTILLAS_VISIBLE } from "@/lib/publicSiteFlags";
 
 const bestsellers = [
   {
@@ -17,13 +18,19 @@ const bestsellers = [
 ];
 
 export function BestSellersSection() {
+  const items = PUBLIC_TORTILLAS_VISIBLE
+    ? bestsellers
+    : bestsellers.filter((b) => !b.href.includes("tortilje"));
+
   return (
     <section className="mt-10">
       <h2 className="text-xl font-semibold text-brown-soft">
         Najprodavaniji proizvodi
       </h2>
-      <div className="mt-4 grid grid-cols-2 gap-4">
-        {bestsellers.map((item) => (
+      <div
+        className={`mt-4 grid gap-4 ${items.length === 1 ? "grid-cols-1 sm:max-w-xs sm:mx-auto" : "grid-cols-2"}`}
+      >
+        {items.map((item) => (
           <Link
             key={item.title}
             href={item.href}

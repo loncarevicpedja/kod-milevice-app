@@ -18,6 +18,7 @@ import {
   isClassicPancakeCategory,
 } from "@/lib/menuUtils";
 import type { CartAddon } from "@/components/cart/CartContext";
+import { PUBLIC_TORTILLAS_VISIBLE } from "@/lib/publicSiteFlags";
 
 async function getProducts(): Promise<ProductRow[]> {
   const { data, error } = await supabase
@@ -211,13 +212,19 @@ export default async function MenuPage({
   const savoryAddons = toCartAddons(addons.filter(isSavoryAddon));
   const showOnlyPancakes = filterType === "palacinke";
   const showOnlyTortillas = filterType === "tortilje";
+  const showTortillaSection =
+    PUBLIC_TORTILLAS_VISIBLE && (filterType === null || showOnlyTortillas);
+  const showPancakeSection =
+    filterType === null ||
+    showOnlyPancakes ||
+    (showOnlyTortillas && !PUBLIC_TORTILLAS_VISIBLE);
 
   return (
     <div>
       <h1 className="font-bakerie text-3xl text-brown-soft">
         {showOnlyPancakes
           ? "Palačinke"
-          : showOnlyTortillas
+          : showOnlyTortillas && PUBLIC_TORTILLAS_VISIBLE
             ? "Tortilje"
             : "Meni"}
       </h1>
@@ -226,7 +233,7 @@ export default async function MenuPage({
       </p>
       <MenuCartNotice />
 
-      {(filterType === null || showOnlyPancakes) && (
+      {showPancakeSection && (
         <section className="mt-6">
           <h2 className="text-xl font-semibold text-brown-soft">Palačinke</h2>
 
@@ -264,7 +271,7 @@ export default async function MenuPage({
         </section>
       )}
 
-      {(filterType === null || showOnlyTortillas) && (
+      {showTortillaSection && (
         <section className="mt-8">
           <h2 className="text-xl font-semibold text-brown-soft">Tortilje</h2>
           <div className="mt-4 rounded-3xl bg-cream/70 p-4">

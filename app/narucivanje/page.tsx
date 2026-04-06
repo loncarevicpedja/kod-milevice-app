@@ -13,11 +13,18 @@ import {
 } from "@/lib/menuUtils";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { MenuCartNotice } from "@/components/menu/MenuCartNotice";
+import { PUBLIC_TORTILLAS_VISIBLE } from "@/lib/publicSiteFlags";
 
 type Step = 0 | 1 | 2;
 
 const STEPS_PALACINKE = [
   { label: "Tip hrane", step: 0 as Step },
+  { label: "Ukus", step: 1 as Step },
+  { label: "Proizvod", step: 2 as Step },
+];
+
+/** Kada tortilje nisu na sajtu: samo ukus pa proizvod (bez izbora tipa hrane). */
+const STEPS_PALACINKE_NO_TORTILLA = [
   { label: "Ukus", step: 1 as Step },
   { label: "Proizvod", step: 2 as Step },
 ];
@@ -28,16 +35,30 @@ const STEPS_TORTILJE = [
 ];
 
 export default function NarucivanjePage() {
-  const [step, setStep] = useState<Step>(0);
-  const [type, setType] = useState<"palacinke" | "tortilje" | null>(null);
+  const [step, setStep] = useState<Step>(PUBLIC_TORTILLAS_VISIBLE ? 0 : 1);
+  const [type, setType] = useState<"palacinke" | "tortilje" | null>(
+    PUBLIC_TORTILLAS_VISIBLE ? null : "palacinke",
+  );
   const [taste, setTaste] = useState<"slane" | "slatke" | null>(null);
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [addons, setAddons] = useState<AddonRow[]>([]);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const progressSteps = type === "tortilje" ? STEPS_TORTILJE : STEPS_PALACINKE;
-  const currentProgressStep = type === "tortilje" ? (step === 0 ? 0 : 1) : step;
+  const progressSteps =
+    type === "tortilje"
+      ? STEPS_TORTILJE
+      : PUBLIC_TORTILLAS_VISIBLE
+        ? STEPS_PALACINKE
+        : STEPS_PALACINKE_NO_TORTILLA;
+  const currentProgressStep =
+    type === "tortilje"
+      ? step === 0
+        ? 0
+        : 1
+      : PUBLIC_TORTILLAS_VISIBLE
+        ? step
+        : step - 1;
 
   useEffect(() => {
     if (step !== 2) return;
@@ -118,6 +139,7 @@ export default function NarucivanjePage() {
 
   function goToStep(targetStep: Step) {
     if (targetStep === 0) {
+      if (!PUBLIC_TORTILLAS_VISIBLE) return;
       setStep(0);
       setType(null);
       setTaste(null);
@@ -135,6 +157,10 @@ export default function NarucivanjePage() {
       return;
     }
     if (step === 1) {
+      if (!PUBLIC_TORTILLAS_VISIBLE) {
+        router.push("/");
+        return;
+      }
       goToStep(0);
       return;
     }
@@ -171,7 +197,11 @@ export default function NarucivanjePage() {
           {progressSteps.map((item, idx) => {
             const isCurrent = idx === currentProgressStep;
             const isPast =
-              type === "tortilje" ? idx < currentProgressStep : idx < step;
+              type === "tortilje"
+                ? idx < currentProgressStep
+                : PUBLIC_TORTILLAS_VISIBLE
+                  ? idx < step
+                  : idx < step - 1;
 
             let allowed = true;
             if (item.step === 0) {
@@ -223,7 +253,7 @@ export default function NarucivanjePage() {
 
       <MenuCartNotice />
 
-      {step === 0 && (
+      {PUBLIC_TORTILLAS_VISIBLE && step === 0 && (
         <section className="rounded-3xl bg-white/90 p-5 shadow-sm ring-1 ring-rose/10">
           <h1 className="font-bakerie text-3xl text-brown-soft">
             Šta želiš da naručiš?
