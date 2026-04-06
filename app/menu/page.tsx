@@ -296,6 +296,8 @@ export default async function MenuPage({
                   key={`rez-${g.categoryId ?? g.categoryName}`}
                   title={g.categoryName}
                   products={g.products}
+                  availableAddons={sweetAddons}
+                  isClassicSection
                 />
               ))}
             </div>

@@ -124,10 +124,18 @@ export function isSavory(row: ProductRow) {
   return row.taste_type?.name.toLowerCase().includes("slan") ?? false;
 }
 
-/** Kategorija „Rezanci“ – posebna sekcija na meniju */
+/**
+ * Kategorija „Rezanci“ – posebna sekcija na /menu.
+ * Ranije samo `ime.includes("rezan")`; ćirilica „резанци“ ne sadrži taj podstring, niti se gleda `product_category_id`.
+ */
+const REZANCI_CATEGORY_IDS: readonly number[] = [6];
+
 export function isRezanciCategoryProduct(row: ProductRow) {
   const n = (row.product_category?.name ?? "").toLowerCase();
-  return n.includes("rezan");
+  if (n.includes("rezan") || n.includes("резан")) return true;
+  const id = row.product_category_id;
+  if (id != null && REZANCI_CATEGORY_IDS.includes(Number(id))) return true;
+  return false;
 }
 
 /** Grupisanje proizvoda po kategoriji iz baze (naslov sekcije = naziv kategorije) */
