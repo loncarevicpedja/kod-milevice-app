@@ -8,15 +8,15 @@ export default function AdminPodesavanjaPage() {
         ← Dashboard
       </Link>
       <h1 className="mt-4 text-2xl font-semibold text-gray-800">
-        Podešavanja (cena dostave, vremena)
+        Podešavanja (cena dostave, vremena, naručivanje)
       </h1>
       <p className="mt-1 text-sm text-gray-600">
-        Ovde podešavaš cenu dostave, vremena pripreme/dostave i slično. Radno vreme
-        za naručivanje i prikaz na sajtu je u kodu (
-        <code className="text-xs">lib/fixedBusinessHours.ts</code>
-        ). Ostale vrednosti se čuvaju u tabeli{" "}
-        <code className="text-xs">restaurant_settings</code> u Supabase-u (jedan red
-        po ključu).
+        Cena dostave, vremena pripreme/dostave i{" "}
+        <strong>interval kada se na sajtu sme naručiti</strong> (pon–pet i vikend,
+        zona Belgrade). Footer i kontakt prikazuju fiksno radno vreme do 23:00; u
+        formi ispod podešavaš stvarni kraj naručivanja (npr. 22:45). Vrednosti se
+        čuvaju u tabeli{" "}
+        <code className="text-xs">restaurant_settings</code> u Supabase-u.
       </p>
       <AdminSettingsForm />
     </div>

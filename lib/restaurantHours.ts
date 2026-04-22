@@ -111,5 +111,5 @@ export function closedReasonMessage(
   if (reason === "before") {
     return `Radno vreme još nije počelo (otvaramo u ${startStr} ${dayLabel}). Pokušaj ponovo kasnije tokom dana.`;
   }
-  return `Nažalost, radno vreme je završeno (do ${endStr} ${dayLabel}). Poručivanje je moguće u sledećem periodu kada smo otvoreni.`;
+  return `Nažalost, radno vreme je završeno. Poručivanje je moguće od sutra. Vidimo se!`;
 }

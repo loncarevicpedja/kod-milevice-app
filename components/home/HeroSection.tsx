@@ -10,7 +10,7 @@ export function HeroSection({
 } = {}) {
   return (
     <section className="mt-4 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-sky/20 md:flex md:items-center md:gap-8">
-      <div className="relative mx-auto mb-4 h-44 w-full max-w-md overflow-hidden rounded-3xl bg-sky/20 ring-1 ring-sky/30 md:mb-0 md:flex-1">
+      <div className="relative mx-auto mb-4 h-44 w-full max-w-md overflow-hidden rounded-3xl bg-sky/20 ring-1 ring-sky/30 md:mb-0 md:h-80 md:flex-1">
         <Image
           src="/images/fica.jpg"
           alt="Dostavno vozilo Kod Milevice"

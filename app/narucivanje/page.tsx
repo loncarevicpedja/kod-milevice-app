@@ -304,21 +304,22 @@ export default function NarucivanjePage() {
           <h2 className="text-lg font-semibold text-brown-soft">
             Da li želiš slane ili slatke palačinke?
           </h2>
-          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+          <div className="mt-4 grid grid-cols-2 items-stretch gap-4 text-sm">
             <button
               type="button"
               onClick={() => {
                 setTaste("slane");
                 setStep(2);
               }}
-              className="flex flex-col items-center rounded-3xl bg-cream/80 p-4 font-semibold text-brown-soft shadow-sm hover:bg-cream"
+              className="flex w-full min-w-0 flex-col items-center rounded-3xl bg-cream/80 p-4 font-semibold text-brown-soft shadow-sm hover:bg-cream"
             >
-              <div className="relative mb-2 h-24 w-full overflow-hidden rounded-2xl">
+              <div className="relative mb-2 h-28 w-full shrink-0 overflow-hidden rounded-2xl bg-cream/50 md:h-auto md:aspect-[5/4]">
                 <Image
                   src="/images/cl-slana.jpeg"
                   alt="Slane palačinke"
                   fill
-                  className="object-cover"
+                  className="object-contain p-0.5"
+                  sizes="(max-width: 768px) 45vw, 360px"
                 />
               </div>
               Slane
@@ -329,14 +330,15 @@ export default function NarucivanjePage() {
                 setTaste("slatke");
                 setStep(2);
               }}
-              className="flex flex-col items-center rounded-3xl bg-cream/80 p-4 font-semibold text-brown-soft shadow-sm hover:bg-cream"
+              className="flex w-full min-w-0 flex-col items-center rounded-3xl bg-cream/80 p-4 font-semibold text-brown-soft shadow-sm hover:bg-cream"
             >
-              <div className="relative mb-2 h-24 w-full overflow-hidden rounded-2xl">
+              <div className="relative mb-2 h-28 w-full shrink-0 overflow-hidden rounded-2xl bg-cream/50 md:h-auto md:aspect-[5/4]">
                 <Image
                   src="/images/cl-slatka.jpeg"
                   alt="Slatke palačinke"
                   fill
-                  className="object-cover"
+                  className="object-contain p-0.5"
+                  sizes="(max-width: 768px) 45vw, 360px"
                 />
               </div>
               Slatke

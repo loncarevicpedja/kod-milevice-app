@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { applyFixedBusinessHours } from "@/lib/fixedBusinessHours";
 import { getRestaurantSettingsFromDb } from "@/lib/restaurantSettingsDb";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const raw = await getRestaurantSettingsFromDb();
-  const payload = applyFixedBusinessHours(raw);
+  const payload = await getRestaurantSettingsFromDb();
 
   return NextResponse.json(payload, {
     headers: {
