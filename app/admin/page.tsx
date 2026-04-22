@@ -12,7 +12,7 @@ const links = [
   {
     href: "/admin/podesavanja",
     label: "Podešavanja",
-    desc: "Cena dostave, radno vreme pon–pet i vikend, vremena",
+    desc: "Cena dostave, vremena (radno vreme u kodu)",
   },
 ];
 

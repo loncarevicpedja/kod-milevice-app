@@ -7,10 +7,6 @@ type FormState = {
   delivery_fee_rsd: number;
   prep_time_minutes: number;
   delivery_extra_minutes: number;
-  weekday_work_start: string;
-  weekday_work_end: string;
-  weekend_work_start: string;
-  weekend_work_end: string;
   menu_cart_enabled: boolean;
   order_email_enabled: boolean;
 };
@@ -34,10 +30,6 @@ function apiJsonToForm(data: Record<string, unknown>): FormState {
     delivery_fee_rsd: Number(data.delivery_fee_rsd ?? 200),
     prep_time_minutes: Number(data.prep_time_minutes ?? 25),
     delivery_extra_minutes: Number(data.delivery_extra_minutes ?? 25),
-    weekday_work_start: String(data.weekday_work_start ?? "12:00"),
-    weekday_work_end: String(data.weekday_work_end ?? "23:00"),
-    weekend_work_start: String(data.weekend_work_start ?? "14:00"),
-    weekend_work_end: String(data.weekend_work_end ?? "23:00"),
     menu_cart_enabled: menuCartEnabled,
     order_email_enabled: orderEmailEnabled,
   };
@@ -191,131 +183,13 @@ export function AdminSettingsForm() {
         </label>
       </div>
 
-      <section
-        className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
-        aria-labelledby="hours-weekdays-heading"
-      >
-        <h2
-          id="hours-weekdays-heading"
-          className="text-sm font-semibold text-gray-800"
-        >
-          Radno vreme – ponedeljak do petka
-        </h2>
-        <p className="mt-1 text-xs text-gray-500">
-          U ovom intervalu korisnici mogu da naruče od ponedeljka do petka
-          (Evropa/Belgrade).
-        </p>
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-gray-600">
-              Početak (HH:MM)
-            </label>
-            <input
-              type="text"
-              placeholder="12:00"
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
-              value={form.weekday_work_start}
-              onChange={(e) =>
-                setForm((f) =>
-                  f ? { ...f, weekday_work_start: e.target.value } : f,
-                )
-              }
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600">
-              Kraj (HH:MM)
-            </label>
-            <input
-              type="text"
-              placeholder="23:00"
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
-              value={form.weekday_work_end}
-              onChange={(e) =>
-                setForm((f) =>
-                  f ? { ...f, weekday_work_end: e.target.value } : f,
-                )
-              }
-            />
-          </div>
-        </div>
-        <p className="mt-2 text-xs text-gray-500">
-          Na sajtu:{" "}
-          <span className="font-medium text-gray-700">
-            Pon - pet: {form.weekday_work_start} - {form.weekday_work_end}
-          </span>
-        </p>
-      </section>
-
-      <section
-        className="rounded-2xl border-2 border-rose/25 bg-rose/5 p-4 shadow-sm"
-        aria-labelledby="hours-weekend-heading"
-      >
-        <h2
-          id="hours-weekend-heading"
-          className="text-sm font-semibold text-gray-800"
-        >
-          Radno vreme – vikend (subota i nedelja)
-        </h2>
-        <p className="mt-1 text-xs text-gray-600">
-          Poseban interval za subotu i nedelju. Čuva se u bazi kao ključevi{" "}
-          <code className="rounded bg-white/80 px-1 text-[11px]">
-            weekend_work_start
-          </code>{" "}
-          i{" "}
-          <code className="rounded bg-white/80 px-1 text-[11px]">
-            weekend_work_end
-          </code>
-          .
-        </p>
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-gray-600">
-              Početak vikenda (HH:MM)
-            </label>
-            <input
-              type="text"
-              placeholder="14:00"
-              autoComplete="off"
-              className="mt-1 w-full rounded-lg border border-rose/30 bg-white px-3 py-2 text-sm"
-              value={form.weekend_work_start}
-              onChange={(e) =>
-                setForm((f) =>
-                  f ? { ...f, weekend_work_start: e.target.value } : f,
-                )
-              }
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600">
-              Kraj vikenda (HH:MM)
-            </label>
-            <input
-              type="text"
-              placeholder="23:00"
-              autoComplete="off"
-              className="mt-1 w-full rounded-lg border border-rose/30 bg-white px-3 py-2 text-sm"
-              value={form.weekend_work_end}
-              onChange={(e) =>
-                setForm((f) =>
-                  f ? { ...f, weekend_work_end: e.target.value } : f,
-                )
-              }
-            />
-          </div>
-        </div>
-        <p className="mt-2 text-xs text-gray-600">
-          Na sajtu (footer, kontakt):{" "}
-          <span className="font-medium text-gray-800">
-            Sub - ned: {form.weekend_work_start} - {form.weekend_work_end}
-          </span>
-        </p>
-      </section>
-
       <p className="text-xs text-gray-500">
-        Vreme se računa po zoni Evropa/Belgrade. Ponedeljak–petak i vikend mogu
-        imati različite intervale. Footer i stranica Kontakt automatski prikazuju
-        oba opsega. Van aktivnog opsega za taj dan korisnici ne mogu da naruče.
+        Radno vreme (pon–pet i vikend) je{" "}
+        <strong>zakucano u kodu</strong> u fajlu{" "}
+        <code className="rounded bg-gray-100 px-1 text-[11px]">
+          lib/fixedBusinessHours.ts
+        </code>
+        , ne iz ove forme.
       </p>
 
       {message && (

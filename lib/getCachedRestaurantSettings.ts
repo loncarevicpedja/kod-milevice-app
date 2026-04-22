@@ -1,10 +1,11 @@
+import { applyFixedBusinessHours } from "@/lib/fixedBusinessHours";
 import { getRestaurantSettingsFromDb } from "@/lib/restaurantSettingsDb";
 
 /**
  * Podešavanja za Server Components (layout, stranice).
- * Bez React cache / noStore – jedan izvor istine je `getRestaurantSettingsFromDb`
- * (service role kada je podešen u .env).
+ * Radno vreme uvek dolazi iz `fixedBusinessHours`, ne iz baze.
  */
 export async function getCachedRestaurantSettings() {
-  return getRestaurantSettingsFromDb();
+  const raw = await getRestaurantSettingsFromDb();
+  return applyFixedBusinessHours(raw);
 }

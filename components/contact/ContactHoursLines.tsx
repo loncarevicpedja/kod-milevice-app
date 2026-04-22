@@ -1,15 +1,8 @@
-"use client";
+import { getFixedContactHoursLines } from "@/lib/fixedBusinessHours";
 
-import { useRestaurantSettings } from "@/components/settings/RestaurantSettingsContext";
-import { getContactHoursLines } from "@/lib/contactHoursDisplay";
-
-/**
- * Radno vreme iz konteksta (isti izvor kao API / baza), da se odmah ažurira
- * posle admina i da ne zavisi od keširanog server HTML-a u footeru.
- */
+/** Radno vreme iz koda (`lib/fixedBusinessHours.ts`), ne iz baze. */
 export function ContactHoursLines() {
-  const { settings } = useRestaurantSettings();
-  const hours = getContactHoursLines(settings);
+  const hours = getFixedContactHoursLines();
 
   return (
     <>

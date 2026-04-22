@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
 import type { CartItem } from "@/components/cart/CartContext";
 import { notifyRestaurantOrder } from "@/lib/notifyOrder";
-import { getRestaurantSettingsFromDb } from "@/lib/restaurantSettingsDb";
+import { getCachedRestaurantSettings } from "@/lib/getCachedRestaurantSettings";
 import {
   closedReasonMessage,
   getOrderingClosedReason,
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const settings = await getRestaurantSettingsFromDb();
+  const settings = await getCachedRestaurantSettings();
   const closed = getOrderingClosedReason(new Date(), settings);
   if (closed) {
     return NextResponse.json(

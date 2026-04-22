@@ -251,9 +251,7 @@ export function AddToCartButton({
                       </p>
                       {slot.addons.length === 0 ? (
                         <p className="mt-2 rounded-2xl bg-amber-50 px-3 py-2 text-xs text-amber-900/90">
-                          U admin panelu dodeli dodatke ovoj grupi (Proizvod →
-                          grupe dodataka), ili proveri tip dodatka (tortilja /
-                          osnovne slane – meso ili namaz) i migraciju.
+                          Dodeli dodatke.
                         </p>
                       ) : (
                         <div className="mt-2 max-h-40 space-y-2 overflow-y-auto">
