@@ -7,6 +7,7 @@ import { CartProvider } from "@/components/cart/CartContext";
 import { BottomCartBar } from "@/components/cart/BottomCartBar";
 import { RestaurantSettingsProvider } from "@/components/settings/RestaurantSettingsContext";
 import { getCachedRestaurantSettings } from "@/lib/getCachedRestaurantSettings";
+import { Analytics } from "@vercel/analytics/next";
 
 /** Uvek sveže podešavanja iz baze (bez statičkog HTML keša za ceo sajt). */
 export const dynamic = "force-dynamic";
@@ -97,6 +98,7 @@ export default async function RootLayout({
             <BottomCartBar />
           </RestaurantSettingsProvider>
         </CartProvider>
+        <Analytics />
       </body>
     </html>
   );
