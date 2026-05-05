@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -88,6 +89,20 @@ export default async function RootLayout({
 
   return (
     <html lang="sr">
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-5F75SJ3NTV"
+          strategy="afterInteractive"
+        />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-5F75SJ3NTV');
+          `}
+        </Script>
+      </head>
       <body className={`${poppins.variable} antialiased bg-cream`}>
         <CartProvider>
           <RestaurantSettingsProvider initialSettings={restaurantSettings}>
