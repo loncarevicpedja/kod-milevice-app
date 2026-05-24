@@ -12,9 +12,10 @@ export default function AdminPodesavanjaPage() {
       </h1>
       <p className="mt-1 text-sm text-gray-600">
         Cena dostave, vremena pripreme/dostave i{" "}
-        <strong>interval kada se na sajtu sme naručiti</strong> (pon–pet i vikend,
-        zona Belgrade). Footer i kontakt prikazuju fiksno radno vreme do 23:00; u
-        formi ispod podešavaš stvarni kraj naručivanja (npr. 22:45). Vrednosti se
+        <strong>interval kada se na sajtu sme naručiti</strong> (pon–pet, subota i
+        nedelja posebno, zona Belgrade). Footer i kontakt prikazuju fiksno radno
+        vreme do 23:00; u formi ispod podešavaš stvarni kraj naručivanja (npr.
+        22:45). Vrednosti se
         čuvaju u tabeli{" "}
         <code className="text-xs">restaurant_settings</code> u Supabase-u.
       </p>

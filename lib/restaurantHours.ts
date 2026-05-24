@@ -53,36 +53,56 @@ export function isWeekendBelgrade(now: Date): boolean {
   return dow === 0 || dow === 6;
 }
 
-export type OrderingClosedReason = "before" | "after";
+export type OrderingClosedReason = "before" | "after" | "closed";
 
-function getActiveWorkWindow(settings: RestaurantSettings, weekend: boolean) {
-  return weekend
-    ? {
-        start: settings.weekend_work_start,
-        end: settings.weekend_work_end,
-      }
-    : {
-        start: settings.weekday_work_start,
-        end: settings.weekday_work_end,
-      };
+type DayWorkWindow = {
+  closed: boolean;
+  start: string;
+  end: string;
+};
+
+function getDayWorkWindow(
+  settings: RestaurantSettings,
+  dayOfWeek: number,
+): DayWorkWindow | null {
+  if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+    return {
+      closed: false,
+      start: settings.weekday_work_start,
+      end: settings.weekday_work_end,
+    };
+  }
+  if (dayOfWeek === 6) {
+    return {
+      closed: settings.saturday_closed,
+      start: settings.saturday_work_start,
+      end: settings.saturday_work_end,
+    };
+  }
+  if (dayOfWeek === 0) {
+    return {
+      closed: settings.sunday_closed,
+      start: settings.sunday_work_start,
+      end: settings.sunday_work_end,
+    };
+  }
+  return null;
 }
 
 /**
- * Ako je zatvoreno za naručivanje, zašto (pre otvaranja ili posle zatvaranja).
- * Koristi radno vreme za radne dane (pon–pet) ili za vikend (sub–ned) u zavisnosti od dana u Belgrade.
+ * Ako je zatvoreno za naručivanje, zašto (pre otvaranja, posle zatvaranja ili neradan dan).
+ * Koristi radno vreme po danu u nedelji (Belgrade).
  */
 export function getOrderingClosedReason(
   now: Date,
   settings: RestaurantSettings,
 ): OrderingClosedReason | null {
-  const weekend = isWeekendBelgrade(now);
-  const { start: startStr, end: endStr } = getActiveWorkWindow(
-    settings,
-    weekend,
-  );
+  const window = getDayWorkWindow(settings, getBelgradeDayOfWeek(now));
+  if (!window) return null;
+  if (window.closed) return "closed";
 
-  const start = parseTimeToMinutes(startStr);
-  const end = parseTimeToMinutes(endStr);
+  const start = parseTimeToMinutes(window.start);
+  const end = parseTimeToMinutes(window.end);
   if (start == null || end == null) return null;
 
   const cur = getBelgradeMinutesFromMidnight(now);
@@ -100,16 +120,27 @@ export function closedReasonMessage(
   now: Date,
   settings: RestaurantSettings,
 ): string {
-  const weekend = isWeekendBelgrade(now);
-  const { start: startStr, end: endStr } = getActiveWorkWindow(
-    settings,
-    weekend,
-  );
+  const dow = getBelgradeDayOfWeek(now);
+  const window = getDayWorkWindow(settings, dow);
+  if (!window) {
+    return "Poručivanje trenutno nije moguće.";
+  }
 
-  const dayLabel = weekend ? "vikendom" : "radnim danima";
+  if (reason === "closed") {
+    if (dow === 6) {
+      return "Subotom ne radimo. Poručivanje nije moguće.";
+    }
+    if (dow === 0) {
+      return "Nedeljom ne radimo. Poručivanje nije moguće.";
+    }
+    return "Danas je neradan dan. Poručivanje nije moguće.";
+  }
+
+  const dayLabel =
+    dow === 6 ? "subotom" : dow === 0 ? "nedeljom" : "radnim danima";
 
   if (reason === "before") {
-    return `Radno vreme još nije počelo (otvaramo u ${startStr} ${dayLabel}). Pokušaj ponovo kasnije tokom dana.`;
+    return `Radno vreme još nije počelo (otvaramo u ${window.start} ${dayLabel}). Pokušaj ponovo kasnije tokom dana.`;
   }
   return `Nažalost, radno vreme je završeno. Poručivanje je moguće od sutra. Vidimo se!`;
 }

@@ -6,7 +6,7 @@ export function ContactHoursLines() {
   return (
     <div className="space-y-1">
       <p>Pon – pet: 12:00 – 23:00</p>
-      <p>Sub – ned: 14:00 – 23:00</p>
+      <p>Sub: 15:00 – 23:00</p>
     </div>
   );
 }

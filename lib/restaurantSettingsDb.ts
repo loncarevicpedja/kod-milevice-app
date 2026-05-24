@@ -11,6 +11,13 @@ import {
 
 type Row = { key: string; value: string; updated_at?: string | null };
 
+function parseSettingBoolean(raw: string, defaultValue: boolean): boolean {
+  const v = raw.trim().toLowerCase();
+  if (v === "true" || v === "1") return true;
+  if (v === "false" || v === "0") return false;
+  return defaultValue;
+}
+
 export function rowsToRestaurantSettings(rows: Row[] | null): RestaurantSettings {
   if (!rows?.length) return DEFAULT_RESTAURANT_SETTINGS;
 
@@ -32,9 +39,15 @@ export function rowsToRestaurantSettings(rows: Row[] | null): RestaurantSettings
   const legacyEnd = (m.get("work_end_time") ?? "").trim();
   const fallbackWeekdayStart = legacyStart || def.weekday_work_start;
   const fallbackWeekdayEnd = legacyEnd || def.weekday_work_end;
-  /** Za vikend, ako nema posebnih vrednosti, koristi isto kao radni dani (kao kod starog jednog opsega) */
-  const fallbackWeekendStart = legacyStart || def.weekend_work_start;
-  const fallbackWeekendEnd = legacyEnd || def.weekend_work_end;
+  /** Stari weekend_* ključevi — fallback za sub/ned ako novi još nisu u bazi */
+  const legacyWeekendStart =
+    (m.get("weekend_work_start") ?? "").trim() ||
+    legacyStart ||
+    def.saturday_work_start;
+  const legacyWeekendEnd =
+    (m.get("weekend_work_end") ?? "").trim() ||
+    legacyEnd ||
+    def.saturday_work_end;
 
   return {
     id: 1,
@@ -57,8 +70,18 @@ export function rowsToRestaurantSettings(rows: Row[] | null): RestaurantSettings
     ),
     weekday_work_start: get("weekday_work_start", fallbackWeekdayStart),
     weekday_work_end: get("weekday_work_end", fallbackWeekdayEnd),
-    weekend_work_start: get("weekend_work_start", fallbackWeekendStart),
-    weekend_work_end: get("weekend_work_end", fallbackWeekendEnd),
+    saturday_work_start: get("saturday_work_start", legacyWeekendStart),
+    saturday_work_end: get("saturday_work_end", legacyWeekendEnd),
+    saturday_closed: parseSettingBoolean(
+      get("saturday_closed", "false"),
+      def.saturday_closed,
+    ),
+    sunday_work_start: get("sunday_work_start", legacyWeekendStart),
+    sunday_work_end: get("sunday_work_end", legacyWeekendEnd),
+    sunday_closed: parseSettingBoolean(
+      get("sunday_closed", "false"),
+      def.sunday_closed,
+    ),
     menu_cart_enabled: (() => {
       const raw = (m.get("menu_cart_enabled") ?? "true").toString().trim().toLowerCase();
       return raw !== "false" && raw !== "0";
@@ -98,14 +121,30 @@ export function mergeRestaurantSettings(
       typeof body.weekday_work_end === "string"
         ? body.weekday_work_end.trim()
         : base.weekday_work_end,
-    weekend_work_start:
-      typeof body.weekend_work_start === "string"
-        ? body.weekend_work_start.trim()
-        : base.weekend_work_start,
-    weekend_work_end:
-      typeof body.weekend_work_end === "string"
-        ? body.weekend_work_end.trim()
-        : base.weekend_work_end,
+    saturday_work_start:
+      typeof body.saturday_work_start === "string"
+        ? body.saturday_work_start.trim()
+        : base.saturday_work_start,
+    saturday_work_end:
+      typeof body.saturday_work_end === "string"
+        ? body.saturday_work_end.trim()
+        : base.saturday_work_end,
+    saturday_closed:
+      typeof body.saturday_closed === "boolean"
+        ? body.saturday_closed
+        : base.saturday_closed,
+    sunday_work_start:
+      typeof body.sunday_work_start === "string"
+        ? body.sunday_work_start.trim()
+        : base.sunday_work_start,
+    sunday_work_end:
+      typeof body.sunday_work_end === "string"
+        ? body.sunday_work_end.trim()
+        : base.sunday_work_end,
+    sunday_closed:
+      typeof body.sunday_closed === "boolean"
+        ? body.sunday_closed
+        : base.sunday_closed,
     menu_cart_enabled:
       typeof body.menu_cart_enabled === "boolean"
         ? body.menu_cart_enabled
@@ -154,10 +193,18 @@ export function settingsToKeyValueRows(
         return s.weekday_work_start;
       case "weekday_work_end":
         return s.weekday_work_end;
-      case "weekend_work_start":
-        return s.weekend_work_start;
-      case "weekend_work_end":
-        return s.weekend_work_end;
+      case "saturday_work_start":
+        return s.saturday_work_start;
+      case "saturday_work_end":
+        return s.saturday_work_end;
+      case "saturday_closed":
+        return s.saturday_closed ? "true" : "false";
+      case "sunday_work_start":
+        return s.sunday_work_start;
+      case "sunday_work_end":
+        return s.sunday_work_end;
+      case "sunday_closed":
+        return s.sunday_closed ? "true" : "false";
       case "menu_cart_enabled":
         return s.menu_cart_enabled ? "true" : "false";
       case "order_email_enabled":

@@ -9,11 +9,95 @@ type FormState = {
   delivery_extra_minutes: number;
   weekday_work_start: string;
   weekday_work_end: string;
-  weekend_work_start: string;
-  weekend_work_end: string;
+  saturday_work_start: string;
+  saturday_work_end: string;
+  saturday_closed: boolean;
+  sunday_work_start: string;
+  sunday_work_end: string;
+  sunday_closed: boolean;
   menu_cart_enabled: boolean;
   order_email_enabled: boolean;
 };
+
+function parseClosedFlag(raw: unknown): boolean {
+  if (typeof raw === "boolean") return raw;
+  return ["true", "1"].includes(String(raw ?? "").trim().toLowerCase());
+}
+
+function WeekendDayHoursSection({
+  title,
+  headingId,
+  closedId,
+  closed,
+  workStart,
+  workEnd,
+  onClosedChange,
+  onWorkStartChange,
+  onWorkEndChange,
+}: {
+  title: string;
+  headingId: string;
+  closedId: string;
+  closed: boolean;
+  workStart: string;
+  workEnd: string;
+  onClosedChange: (checked: boolean) => void;
+  onWorkStartChange: (value: string) => void;
+  onWorkEndChange: (value: string) => void;
+}) {
+  return (
+    <section
+      className="rounded-2xl border border-rose/25 bg-rose/5 p-4 shadow-sm"
+      aria-labelledby={headingId}
+    >
+      <h2 id={headingId} className="text-sm font-semibold text-gray-800">
+        {title}
+      </h2>
+      <div className="mt-3 flex items-start gap-3">
+        <input
+          id={closedId}
+          type="checkbox"
+          className="mt-0.5 h-4 w-4 rounded border-rose/40 text-rose focus:ring-rose"
+          checked={closed}
+          onChange={(e) => onClosedChange(e.target.checked)}
+        />
+        <label htmlFor={closedId} className="text-sm font-medium text-gray-700">
+          Neradan dan
+        </label>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-gray-600">
+            Početak (HH:MM)
+          </label>
+          <input
+            type="text"
+            placeholder="14:00"
+            autoComplete="off"
+            disabled={closed}
+            className="mt-1 w-full rounded-lg border border-rose/30 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+            value={workStart}
+            onChange={(e) => onWorkStartChange(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-600">
+            Kraj (HH:MM)
+          </label>
+          <input
+            type="text"
+            placeholder="22:45"
+            autoComplete="off"
+            disabled={closed}
+            className="mt-1 w-full rounded-lg border border-rose/30 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+            value={workEnd}
+            onChange={(e) => onWorkEndChange(e.target.value)}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function apiJsonToForm(data: Record<string, unknown>): FormState {
   const rawCart = data.menu_cart_enabled;
@@ -36,8 +120,20 @@ function apiJsonToForm(data: Record<string, unknown>): FormState {
     delivery_extra_minutes: Number(data.delivery_extra_minutes ?? 25),
     weekday_work_start: String(data.weekday_work_start ?? "12:00"),
     weekday_work_end: String(data.weekday_work_end ?? "22:45"),
-    weekend_work_start: String(data.weekend_work_start ?? "14:00"),
-    weekend_work_end: String(data.weekend_work_end ?? "22:45"),
+    saturday_work_start: String(
+      data.saturday_work_start ?? data.weekend_work_start ?? "14:00",
+    ),
+    saturday_work_end: String(
+      data.saturday_work_end ?? data.weekend_work_end ?? "22:45",
+    ),
+    saturday_closed: parseClosedFlag(data.saturday_closed),
+    sunday_work_start: String(
+      data.sunday_work_start ?? data.weekend_work_start ?? "14:00",
+    ),
+    sunday_work_end: String(
+      data.sunday_work_end ?? data.weekend_work_end ?? "22:45",
+    ),
+    sunday_closed: parseClosedFlag(data.sunday_closed),
     menu_cart_enabled: menuCartEnabled,
     order_email_enabled: orderEmailEnabled,
   };
@@ -249,56 +345,46 @@ export function AdminSettingsForm() {
         </div>
       </section>
 
-      <section
-        className="rounded-2xl border-2 border-rose/25 bg-rose/5 p-4 shadow-sm"
-        aria-labelledby="order-hours-weekend-heading"
-      >
-        <h2
-          id="order-hours-weekend-heading"
-          className="text-sm font-semibold text-gray-800"
-        >
-          Naručivanje — subota i nedelja
-        </h2>
-        <p className="mt-1 text-xs text-gray-600">
-          Poseban interval za vikend (isti format kao iznad).
-        </p>
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-gray-600">
-              Početak vikenda (HH:MM)
-            </label>
-            <input
-              type="text"
-              placeholder="14:00"
-              autoComplete="off"
-              className="mt-1 w-full rounded-lg border border-rose/30 bg-white px-3 py-2 text-sm"
-              value={form.weekend_work_start}
-              onChange={(e) =>
-                setForm((f) =>
-                  f ? { ...f, weekend_work_start: e.target.value } : f,
-                )
-              }
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600">
-              Kraj vikenda (HH:MM)
-            </label>
-            <input
-              type="text"
-              placeholder="22:45"
-              autoComplete="off"
-              className="mt-1 w-full rounded-lg border border-rose/30 bg-white px-3 py-2 text-sm"
-              value={form.weekend_work_end}
-              onChange={(e) =>
-                setForm((f) =>
-                  f ? { ...f, weekend_work_end: e.target.value } : f,
-                )
-              }
-            />
-          </div>
-        </div>
-      </section>
+      <p className="text-xs text-gray-600">
+        Subota i nedelja imaju odvojena podešavanja. Označi „Neradan dan“ ako se
+        taj dan ne prima porudžbina.
+      </p>
+
+      <WeekendDayHoursSection
+        title="Naručivanje — subota"
+        headingId="order-hours-saturday-heading"
+        closedId="saturday_closed"
+        closed={form.saturday_closed}
+        workStart={form.saturday_work_start}
+        workEnd={form.saturday_work_end}
+        onClosedChange={(checked) =>
+          setForm((f) => (f ? { ...f, saturday_closed: checked } : f))
+        }
+        onWorkStartChange={(value) =>
+          setForm((f) => (f ? { ...f, saturday_work_start: value } : f))
+        }
+        onWorkEndChange={(value) =>
+          setForm((f) => (f ? { ...f, saturday_work_end: value } : f))
+        }
+      />
+
+      <WeekendDayHoursSection
+        title="Naručivanje — nedelja"
+        headingId="order-hours-sunday-heading"
+        closedId="sunday_closed"
+        closed={form.sunday_closed}
+        workStart={form.sunday_work_start}
+        workEnd={form.sunday_work_end}
+        onClosedChange={(checked) =>
+          setForm((f) => (f ? { ...f, sunday_closed: checked } : f))
+        }
+        onWorkStartChange={(value) =>
+          setForm((f) => (f ? { ...f, sunday_work_start: value } : f))
+        }
+        onWorkEndChange={(value) =>
+          setForm((f) => (f ? { ...f, sunday_work_end: value } : f))
+        }
+      />
 
       {message && (
         <p className="text-sm text-gray-700" role="status">

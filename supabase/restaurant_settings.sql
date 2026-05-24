@@ -16,8 +16,12 @@ insert into public.restaurant_settings (key, value) values
   ('delivery_extra_minutes', '25'),
   ('weekday_work_start', '12:00'),
   ('weekday_work_end', '23:00'),
-  ('weekend_work_start', '14:00'),
-  ('weekend_work_end', '23:00'),
+  ('saturday_work_start', '14:00'),
+  ('saturday_work_end', '23:00'),
+  ('saturday_closed', 'false'),
+  ('sunday_work_start', '14:00'),
+  ('sunday_work_end', '23:00'),
+  ('sunday_closed', 'false'),
   ('menu_cart_enabled', 'true'),
   ('order_email_enabled', 'false')
 on conflict (key) do update set
