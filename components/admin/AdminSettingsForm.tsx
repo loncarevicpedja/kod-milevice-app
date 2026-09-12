@@ -9,11 +9,17 @@ type FormState = {
   delivery_extra_minutes: number;
   weekday_work_start: string;
   weekday_work_end: string;
+  weekday_delivery_start: string;
+  weekday_delivery_end: string;
   saturday_work_start: string;
   saturday_work_end: string;
+  saturday_delivery_start: string;
+  saturday_delivery_end: string;
   saturday_closed: boolean;
   sunday_work_start: string;
   sunday_work_end: string;
+  sunday_delivery_start: string;
+  sunday_delivery_end: string;
   sunday_closed: boolean;
   menu_cart_enabled: boolean;
   order_email_enabled: boolean;
@@ -24,6 +30,63 @@ function parseClosedFlag(raw: unknown): boolean {
   return ["true", "1"].includes(String(raw ?? "").trim().toLowerCase());
 }
 
+function TimeRangeFields({
+  startLabel,
+  endLabel,
+  startValue,
+  endValue,
+  startPlaceholder,
+  endPlaceholder,
+  disabled,
+  inputClassName,
+  onStartChange,
+  onEndChange,
+}: {
+  startLabel: string;
+  endLabel: string;
+  startValue: string;
+  endValue: string;
+  startPlaceholder: string;
+  endPlaceholder: string;
+  disabled?: boolean;
+  inputClassName: string;
+  onStartChange: (value: string) => void;
+  onEndChange: (value: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <div>
+        <label className="block text-xs font-medium text-gray-600">
+          {startLabel}
+        </label>
+        <input
+          type="text"
+          placeholder={startPlaceholder}
+          autoComplete="off"
+          disabled={disabled}
+          className={inputClassName}
+          value={startValue}
+          onChange={(e) => onStartChange(e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-gray-600">
+          {endLabel}
+        </label>
+        <input
+          type="text"
+          placeholder={endPlaceholder}
+          autoComplete="off"
+          disabled={disabled}
+          className={inputClassName}
+          value={endValue}
+          onChange={(e) => onEndChange(e.target.value)}
+        />
+      </div>
+    </div>
+  );
+}
+
 function WeekendDayHoursSection({
   title,
   headingId,
@@ -31,9 +94,13 @@ function WeekendDayHoursSection({
   closed,
   workStart,
   workEnd,
+  deliveryStart,
+  deliveryEnd,
   onClosedChange,
   onWorkStartChange,
   onWorkEndChange,
+  onDeliveryStartChange,
+  onDeliveryEndChange,
 }: {
   title: string;
   headingId: string;
@@ -41,10 +108,17 @@ function WeekendDayHoursSection({
   closed: boolean;
   workStart: string;
   workEnd: string;
+  deliveryStart: string;
+  deliveryEnd: string;
   onClosedChange: (checked: boolean) => void;
   onWorkStartChange: (value: string) => void;
   onWorkEndChange: (value: string) => void;
+  onDeliveryStartChange: (value: string) => void;
+  onDeliveryEndChange: (value: string) => void;
 }) {
+  const inputClass =
+    "mt-1 w-full rounded-lg border border-rose/30 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500";
+
   return (
     <section
       className="rounded-2xl border border-rose/25 bg-rose/5 p-4 shadow-sm"
@@ -65,35 +139,36 @@ function WeekendDayHoursSection({
           Neradan dan
         </label>
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-medium text-gray-600">
-            Početak (HH:MM)
-          </label>
-          <input
-            type="text"
-            placeholder="14:00"
-            autoComplete="off"
-            disabled={closed}
-            className="mt-1 w-full rounded-lg border border-rose/30 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
-            value={workStart}
-            onChange={(e) => onWorkStartChange(e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-600">
-            Kraj (HH:MM)
-          </label>
-          <input
-            type="text"
-            placeholder="22:45"
-            autoComplete="off"
-            disabled={closed}
-            className="mt-1 w-full rounded-lg border border-rose/30 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
-            value={workEnd}
-            onChange={(e) => onWorkEndChange(e.target.value)}
-          />
-        </div>
+      <div className="mt-3">
+        <TimeRangeFields
+          startLabel="Početak (HH:MM)"
+          endLabel="Kraj (HH:MM)"
+          startValue={workStart}
+          endValue={workEnd}
+          startPlaceholder="14:00"
+          endPlaceholder="22:45"
+          disabled={closed}
+          inputClassName={inputClass}
+          onStartChange={onWorkStartChange}
+          onEndChange={onWorkEndChange}
+        />
+      </div>
+      <p className="mt-4 text-xs text-gray-500">
+        Interval dostave. Van njega samo lično preuzimanje.
+      </p>
+      <div className="mt-2">
+        <TimeRangeFields
+          startLabel="Početak dostave (HH:MM)"
+          endLabel="Kraj dostave (HH:MM)"
+          startValue={deliveryStart}
+          endValue={deliveryEnd}
+          startPlaceholder="14:00"
+          endPlaceholder="22:45"
+          disabled={closed}
+          inputClassName={inputClass}
+          onStartChange={onDeliveryStartChange}
+          onEndChange={onDeliveryEndChange}
+        />
       </div>
     </section>
   );
@@ -120,11 +195,29 @@ function apiJsonToForm(data: Record<string, unknown>): FormState {
     delivery_extra_minutes: Number(data.delivery_extra_minutes ?? 25),
     weekday_work_start: String(data.weekday_work_start ?? "12:00"),
     weekday_work_end: String(data.weekday_work_end ?? "22:45"),
+    weekday_delivery_start: String(
+      data.weekday_delivery_start ?? data.weekday_work_start ?? "12:00",
+    ),
+    weekday_delivery_end: String(
+      data.weekday_delivery_end ?? data.weekday_work_end ?? "22:45",
+    ),
     saturday_work_start: String(
       data.saturday_work_start ?? data.weekend_work_start ?? "14:00",
     ),
     saturday_work_end: String(
       data.saturday_work_end ?? data.weekend_work_end ?? "22:45",
+    ),
+    saturday_delivery_start: String(
+      data.saturday_delivery_start ??
+        data.saturday_work_start ??
+        data.weekend_work_start ??
+        "14:00",
+    ),
+    saturday_delivery_end: String(
+      data.saturday_delivery_end ??
+        data.saturday_work_end ??
+        data.weekend_work_end ??
+        "22:45",
     ),
     saturday_closed: parseClosedFlag(data.saturday_closed),
     sunday_work_start: String(
@@ -132,6 +225,18 @@ function apiJsonToForm(data: Record<string, unknown>): FormState {
     ),
     sunday_work_end: String(
       data.sunday_work_end ?? data.weekend_work_end ?? "22:45",
+    ),
+    sunday_delivery_start: String(
+      data.sunday_delivery_start ??
+        data.sunday_work_start ??
+        data.weekend_work_start ??
+        "14:00",
+    ),
+    sunday_delivery_end: String(
+      data.sunday_delivery_end ??
+        data.sunday_work_end ??
+        data.weekend_work_end ??
+        "22:45",
     ),
     sunday_closed: parseClosedFlag(data.sunday_closed),
     menu_cart_enabled: menuCartEnabled,
@@ -309,39 +414,44 @@ export function AdminSettingsForm() {
           Od–do kada dugme za porudžbinu i checkout rade (isti dan, zona
           Belgrade).
         </p>
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-gray-600">
-              Početak (HH:MM)
-            </label>
-            <input
-              type="text"
-              placeholder="12:00"
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
-              value={form.weekday_work_start}
-              onChange={(e) =>
-                setForm((f) =>
-                  f ? { ...f, weekday_work_start: e.target.value } : f,
-                )
-              }
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600">
-              Kraj (HH:MM)
-            </label>
-            <input
-              type="text"
-              placeholder="22:45"
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
-              value={form.weekday_work_end}
-              onChange={(e) =>
-                setForm((f) =>
-                  f ? { ...f, weekday_work_end: e.target.value } : f,
-                )
-              }
-            />
-          </div>
+        <div className="mt-3">
+          <TimeRangeFields
+            startLabel="Početak (HH:MM)"
+            endLabel="Kraj (HH:MM)"
+            startValue={form.weekday_work_start}
+            endValue={form.weekday_work_end}
+            startPlaceholder="12:00"
+            endPlaceholder="22:45"
+            inputClassName="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+            onStartChange={(value) =>
+              setForm((f) => (f ? { ...f, weekday_work_start: value } : f))
+            }
+            onEndChange={(value) =>
+              setForm((f) => (f ? { ...f, weekday_work_end: value } : f))
+            }
+          />
+        </div>
+        <p className="mt-4 text-xs text-gray-500">
+          Interval dostave. Van njega samo lično preuzimanje.
+        </p>
+        <div className="mt-2">
+          <TimeRangeFields
+            startLabel="Početak dostave (HH:MM)"
+            endLabel="Kraj dostave (HH:MM)"
+            startValue={form.weekday_delivery_start}
+            endValue={form.weekday_delivery_end}
+            startPlaceholder="12:00"
+            endPlaceholder="22:45"
+            inputClassName="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+            onStartChange={(value) =>
+              setForm((f) =>
+                f ? { ...f, weekday_delivery_start: value } : f,
+              )
+            }
+            onEndChange={(value) =>
+              setForm((f) => (f ? { ...f, weekday_delivery_end: value } : f))
+            }
+          />
         </div>
       </section>
 
@@ -357,6 +467,8 @@ export function AdminSettingsForm() {
         closed={form.saturday_closed}
         workStart={form.saturday_work_start}
         workEnd={form.saturday_work_end}
+        deliveryStart={form.saturday_delivery_start}
+        deliveryEnd={form.saturday_delivery_end}
         onClosedChange={(checked) =>
           setForm((f) => (f ? { ...f, saturday_closed: checked } : f))
         }
@@ -365,6 +477,12 @@ export function AdminSettingsForm() {
         }
         onWorkEndChange={(value) =>
           setForm((f) => (f ? { ...f, saturday_work_end: value } : f))
+        }
+        onDeliveryStartChange={(value) =>
+          setForm((f) => (f ? { ...f, saturday_delivery_start: value } : f))
+        }
+        onDeliveryEndChange={(value) =>
+          setForm((f) => (f ? { ...f, saturday_delivery_end: value } : f))
         }
       />
 
@@ -375,6 +493,8 @@ export function AdminSettingsForm() {
         closed={form.sunday_closed}
         workStart={form.sunday_work_start}
         workEnd={form.sunday_work_end}
+        deliveryStart={form.sunday_delivery_start}
+        deliveryEnd={form.sunday_delivery_end}
         onClosedChange={(checked) =>
           setForm((f) => (f ? { ...f, sunday_closed: checked } : f))
         }
@@ -383,6 +503,12 @@ export function AdminSettingsForm() {
         }
         onWorkEndChange={(value) =>
           setForm((f) => (f ? { ...f, sunday_work_end: value } : f))
+        }
+        onDeliveryStartChange={(value) =>
+          setForm((f) => (f ? { ...f, sunday_delivery_start: value } : f))
+        }
+        onDeliveryEndChange={(value) =>
+          setForm((f) => (f ? { ...f, sunday_delivery_end: value } : f))
         }
       />
 

@@ -70,14 +70,38 @@ export function rowsToRestaurantSettings(rows: Row[] | null): RestaurantSettings
     ),
     weekday_work_start: get("weekday_work_start", fallbackWeekdayStart),
     weekday_work_end: get("weekday_work_end", fallbackWeekdayEnd),
+    weekday_delivery_start: get(
+      "weekday_delivery_start",
+      get("weekday_work_start", fallbackWeekdayStart),
+    ),
+    weekday_delivery_end: get(
+      "weekday_delivery_end",
+      get("weekday_work_end", fallbackWeekdayEnd),
+    ),
     saturday_work_start: get("saturday_work_start", legacyWeekendStart),
     saturday_work_end: get("saturday_work_end", legacyWeekendEnd),
+    saturday_delivery_start: get(
+      "saturday_delivery_start",
+      get("saturday_work_start", legacyWeekendStart),
+    ),
+    saturday_delivery_end: get(
+      "saturday_delivery_end",
+      get("saturday_work_end", legacyWeekendEnd),
+    ),
     saturday_closed: parseSettingBoolean(
       get("saturday_closed", "false"),
       def.saturday_closed,
     ),
     sunday_work_start: get("sunday_work_start", legacyWeekendStart),
     sunday_work_end: get("sunday_work_end", legacyWeekendEnd),
+    sunday_delivery_start: get(
+      "sunday_delivery_start",
+      get("sunday_work_start", legacyWeekendStart),
+    ),
+    sunday_delivery_end: get(
+      "sunday_delivery_end",
+      get("sunday_work_end", legacyWeekendEnd),
+    ),
     sunday_closed: parseSettingBoolean(
       get("sunday_closed", "false"),
       def.sunday_closed,
@@ -121,6 +145,14 @@ export function mergeRestaurantSettings(
       typeof body.weekday_work_end === "string"
         ? body.weekday_work_end.trim()
         : base.weekday_work_end,
+    weekday_delivery_start:
+      typeof body.weekday_delivery_start === "string"
+        ? body.weekday_delivery_start.trim()
+        : base.weekday_delivery_start,
+    weekday_delivery_end:
+      typeof body.weekday_delivery_end === "string"
+        ? body.weekday_delivery_end.trim()
+        : base.weekday_delivery_end,
     saturday_work_start:
       typeof body.saturday_work_start === "string"
         ? body.saturday_work_start.trim()
@@ -129,6 +161,14 @@ export function mergeRestaurantSettings(
       typeof body.saturday_work_end === "string"
         ? body.saturday_work_end.trim()
         : base.saturday_work_end,
+    saturday_delivery_start:
+      typeof body.saturday_delivery_start === "string"
+        ? body.saturday_delivery_start.trim()
+        : base.saturday_delivery_start,
+    saturday_delivery_end:
+      typeof body.saturday_delivery_end === "string"
+        ? body.saturday_delivery_end.trim()
+        : base.saturday_delivery_end,
     saturday_closed:
       typeof body.saturday_closed === "boolean"
         ? body.saturday_closed
@@ -141,6 +181,14 @@ export function mergeRestaurantSettings(
       typeof body.sunday_work_end === "string"
         ? body.sunday_work_end.trim()
         : base.sunday_work_end,
+    sunday_delivery_start:
+      typeof body.sunday_delivery_start === "string"
+        ? body.sunday_delivery_start.trim()
+        : base.sunday_delivery_start,
+    sunday_delivery_end:
+      typeof body.sunday_delivery_end === "string"
+        ? body.sunday_delivery_end.trim()
+        : base.sunday_delivery_end,
     sunday_closed:
       typeof body.sunday_closed === "boolean"
         ? body.sunday_closed
@@ -193,16 +241,28 @@ export function settingsToKeyValueRows(
         return s.weekday_work_start;
       case "weekday_work_end":
         return s.weekday_work_end;
+      case "weekday_delivery_start":
+        return s.weekday_delivery_start;
+      case "weekday_delivery_end":
+        return s.weekday_delivery_end;
       case "saturday_work_start":
         return s.saturday_work_start;
       case "saturday_work_end":
         return s.saturday_work_end;
+      case "saturday_delivery_start":
+        return s.saturday_delivery_start;
+      case "saturday_delivery_end":
+        return s.saturday_delivery_end;
       case "saturday_closed":
         return s.saturday_closed ? "true" : "false";
       case "sunday_work_start":
         return s.sunday_work_start;
       case "sunday_work_end":
         return s.sunday_work_end;
+      case "sunday_delivery_start":
+        return s.sunday_delivery_start;
+      case "sunday_delivery_end":
+        return s.sunday_delivery_end;
       case "sunday_closed":
         return s.sunday_closed ? "true" : "false";
       case "menu_cart_enabled":

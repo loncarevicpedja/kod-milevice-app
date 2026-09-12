@@ -115,6 +115,85 @@ export function isOrderingOpen(now: Date, settings: RestaurantSettings): boolean
   return getOrderingClosedReason(now, settings) === null;
 }
 
+export type DeliveryUnavailableReason = "before" | "after";
+
+function getDayDeliveryWindow(
+  settings: RestaurantSettings,
+  dayOfWeek: number,
+): { start: string; end: string } | null {
+  if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+    return {
+      start: settings.weekday_delivery_start,
+      end: settings.weekday_delivery_end,
+    };
+  }
+  if (dayOfWeek === 6) {
+    return {
+      start: settings.saturday_delivery_start,
+      end: settings.saturday_delivery_end,
+    };
+  }
+  if (dayOfWeek === 0) {
+    return {
+      start: settings.sunday_delivery_start,
+      end: settings.sunday_delivery_end,
+    };
+  }
+  return null;
+}
+
+/**
+ * Dostava je dostupna samo dok je naručivanje otvoreno i trenutno vreme
+ * pada u interval dostave za taj dan (Belgrade).
+ * Ako vremena dostave nisu validna, ponaša se kao da je dostava dostupna
+ * tokom celog intervala naručivanja.
+ */
+export function getDeliveryUnavailableReason(
+  now: Date,
+  settings: RestaurantSettings,
+): DeliveryUnavailableReason | null {
+  if (!isOrderingOpen(now, settings)) return null;
+
+  const window = getDayDeliveryWindow(settings, getBelgradeDayOfWeek(now));
+  if (!window) return null;
+
+  const start = parseTimeToMinutes(window.start);
+  const end = parseTimeToMinutes(window.end);
+  if (start == null || end == null) return null;
+
+  const cur = getBelgradeMinutesFromMidnight(now);
+  if (cur < start) return "before";
+  if (cur >= end) return "after";
+  return null;
+}
+
+export function isDeliveryAvailable(
+  now: Date,
+  settings: RestaurantSettings,
+): boolean {
+  return (
+    isOrderingOpen(now, settings) &&
+    getDeliveryUnavailableReason(now, settings) === null
+  );
+}
+
+export function deliveryUnavailableMessage(
+  reason: DeliveryUnavailableReason,
+  now: Date,
+  settings: RestaurantSettings,
+): string {
+  const window = getDayDeliveryWindow(settings, getBelgradeDayOfWeek(now));
+  const range =
+    window?.start && window.end
+      ? ` od ${window.start} do ${window.end}`
+      : "";
+
+  if (reason === "before") {
+    return `Dostava još nije počela. Dostupna je${range}. Trenutno možete naručiti samo za lično preuzimanje.`;
+  }
+  return `Dostava je završena za danas (interval${range}). Trenutno možete naručiti samo za lično preuzimanje.`;
+}
+
 export function closedReasonMessage(
   reason: OrderingClosedReason,
   now: Date,

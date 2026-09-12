@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart/CartContext";
 import { useRestaurantSettings } from "@/components/settings/RestaurantSettingsContext";
@@ -10,9 +10,23 @@ type Mode = "delivery" | "pickup";
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, totalPrice, orderNote, clearCart } = useCart();
-  const { settings, loading: settingsLoading, isOrderingOpen, closedMessage } =
-    useRestaurantSettings();
-  const [mode, setMode] = useState<Mode>("delivery");
+  const {
+    settings,
+    loading: settingsLoading,
+    isOrderingOpen,
+    closedMessage,
+    isDeliveryAvailable,
+    deliveryUnavailableMessage,
+  } = useRestaurantSettings();
+  const [mode, setMode] = useState<Mode>(() =>
+    isDeliveryAvailable ? "delivery" : "pickup",
+  );
+
+  useEffect(() => {
+    if (!settingsLoading && !isDeliveryAvailable && mode === "delivery") {
+      setMode("pickup");
+    }
+  }, [settingsLoading, isDeliveryAvailable, mode]);
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [apartment, setApartment] = useState("");
@@ -34,6 +48,14 @@ export default function CheckoutPage() {
 
     if (!name.trim() || !phone.trim()) {
       alert("Molimo popunite obavezna polja.");
+      return;
+    }
+
+    if (mode === "delivery" && !isDeliveryAvailable) {
+      alert(
+        deliveryUnavailableMessage ??
+          "Dostava trenutno nije dostupna. Izaberite lično preuzimanje.",
+      );
       return;
     }
 
@@ -113,12 +135,13 @@ export default function CheckoutPage() {
         <div className="mt-3 flex gap-3">
           <button
             type="button"
+            disabled={!isDeliveryAvailable}
             onClick={() => setMode("delivery")}
             className={`flex-1 rounded-2xl border px-3 py-2 text-sm ${
               mode === "delivery"
                 ? "border-rose bg-rose/10 text-brown-soft"
                 : "border-rose/20 bg-cream/60 text-brown-soft/80"
-            }`}
+            } ${!isDeliveryAvailable ? "cursor-not-allowed opacity-50" : ""}`}
           >
             <span className="mr-2">🚗</span> Dostava
           </button>
@@ -134,6 +157,11 @@ export default function CheckoutPage() {
             <span className="mr-2">👤</span> Lično preuzimanje
           </button>
         </div>
+        {!isDeliveryAvailable && isOrderingOpen && deliveryUnavailableMessage && (
+          <p className="mt-3 text-xs text-brown-soft/80">
+            {deliveryUnavailableMessage}
+          </p>
+        )}
       </section>
 
       <section className="rounded-3xl bg-white/90 p-4 shadow-sm ring-1 ring-rose/10">

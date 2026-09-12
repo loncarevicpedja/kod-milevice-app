@@ -5,6 +5,8 @@ import { notifyRestaurantOrder } from "@/lib/notifyOrder";
 import { getCachedRestaurantSettings } from "@/lib/getCachedRestaurantSettings";
 import {
   closedReasonMessage,
+  deliveryUnavailableMessage,
+  getDeliveryUnavailableReason,
   getOrderingClosedReason,
 } from "@/lib/restaurantHours";
 import { validateOrderAddonSlots } from "@/lib/validateOrderAddonSlots";
@@ -32,16 +34,31 @@ export async function POST(request: Request) {
   }
 
   const settings = await getCachedRestaurantSettings();
-  const closed = getOrderingClosedReason(new Date(), settings);
+  const now = new Date();
+  const closed = getOrderingClosedReason(now, settings);
   if (closed) {
     return NextResponse.json(
       {
-        error: closedReasonMessage(closed, new Date(), settings),
+        error: closedReasonMessage(closed, now, settings),
         code: "ORDERING_CLOSED",
         reason: closed,
       },
       { status: 403 },
     );
+  }
+
+  if (body.mode === "delivery") {
+    const deliveryClosed = getDeliveryUnavailableReason(now, settings);
+    if (deliveryClosed) {
+      return NextResponse.json(
+        {
+          error: deliveryUnavailableMessage(deliveryClosed, now, settings),
+          code: "DELIVERY_UNAVAILABLE",
+          reason: deliveryClosed,
+        },
+        { status: 403 },
+      );
+    }
   }
 
   let itemsSubtotal = 0;

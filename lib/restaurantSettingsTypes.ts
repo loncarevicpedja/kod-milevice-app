@@ -7,16 +7,28 @@ export type RestaurantSettings = {
   weekday_work_start: string;
   /** Kraj intervala naručivanja za pon–pet (može biti pre 23:00 prikazanog na sajtu) */
   weekday_work_end: string;
+  /** Početak intervala kada je dostupna dostava: pon–pet */
+  weekday_delivery_start: string;
+  /** Kraj intervala dostave: pon–pet (van njega samo lično preuzimanje) */
+  weekday_delivery_end: string;
   /** Početak naručivanja: subota */
   saturday_work_start: string;
   /** Kraj naručivanja: subota */
   saturday_work_end: string;
+  /** Početak dostave: subota */
+  saturday_delivery_start: string;
+  /** Kraj dostave: subota */
+  saturday_delivery_end: string;
   /** true = subota je neradan dan (naručivanje isključeno) */
   saturday_closed: boolean;
   /** Početak naručivanja: nedelja */
   sunday_work_start: string;
   /** Kraj naručivanja: nedelja */
   sunday_work_end: string;
+  /** Početak dostave: nedelja */
+  sunday_delivery_start: string;
+  /** Kraj dostave: nedelja */
+  sunday_delivery_end: string;
   /** true = nedelja je neradan dan (naručivanje isključeno) */
   sunday_closed: boolean;
   /** false = samo pregled menija, bez dodavanja u korpu */
@@ -36,11 +48,17 @@ export const DEFAULT_RESTAURANT_SETTINGS: RestaurantSettings = {
   delivery_extra_minutes: 25,
   weekday_work_start: "12:00",
   weekday_work_end: "22:45",
+  weekday_delivery_start: "12:00",
+  weekday_delivery_end: "22:45",
   saturday_work_start: "14:00",
   saturday_work_end: "22:45",
+  saturday_delivery_start: "14:00",
+  saturday_delivery_end: "22:45",
   saturday_closed: false,
   sunday_work_start: "14:00",
   sunday_work_end: "22:45",
+  sunday_delivery_start: "14:00",
+  sunday_delivery_end: "22:45",
   sunday_closed: false,
   menu_cart_enabled: true,
   order_email_enabled: false,

@@ -16,6 +16,8 @@ import {
 import {
   getOrderingClosedReason,
   closedReasonMessage,
+  getDeliveryUnavailableReason,
+  deliveryUnavailableMessage,
   type OrderingClosedReason,
 } from "@/lib/restaurantHours";
 
@@ -26,6 +28,8 @@ type Ctx = {
   orderingClosedReason: OrderingClosedReason | null;
   isOrderingOpen: boolean;
   closedMessage: string | null;
+  isDeliveryAvailable: boolean;
+  deliveryUnavailableMessage: string | null;
   refresh: () => Promise<void>;
 };
 
@@ -76,21 +80,34 @@ export function RestaurantSettingsProvider({
     return getOrderingClosedReason(new Date(), settings);
   }, [settings]);
 
+  const deliveryReason = useMemo(() => {
+    if (!settings) return null;
+    return getDeliveryUnavailableReason(new Date(), settings);
+  }, [settings]);
+
   const value = useMemo<Ctx>(() => {
     const s = settings ?? DEFAULT_RESTAURANT_SETTINGS;
+    const now = new Date();
     const msg =
       orderingClosedReason != null
-        ? closedReasonMessage(orderingClosedReason, new Date(), s)
+        ? closedReasonMessage(orderingClosedReason, now, s)
         : null;
+    const deliveryMsg =
+      deliveryReason != null
+        ? deliveryUnavailableMessage(deliveryReason, now, s)
+        : null;
+    const open = orderingClosedReason === null;
     return {
       settings: s,
       loading,
       orderingClosedReason,
-      isOrderingOpen: orderingClosedReason === null,
+      isOrderingOpen: open,
       closedMessage: msg,
+      isDeliveryAvailable: open && deliveryReason === null,
+      deliveryUnavailableMessage: deliveryMsg,
       refresh: () => load(true),
     };
-  }, [settings, loading, orderingClosedReason, load]);
+  }, [settings, loading, orderingClosedReason, deliveryReason, load]);
 
   return (
     <RestaurantSettingsContext.Provider value={value}>
