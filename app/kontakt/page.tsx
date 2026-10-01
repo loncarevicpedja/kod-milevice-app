@@ -32,7 +32,7 @@ export default function KontaktPage() {
         <div className="mt-3 overflow-hidden rounded-2xl border border-mint/50 bg-white shadow-sm">
           <iframe
             title="Mapa - Kod Milevice"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4348.464153058809!2d20.643361!3d44.866561499999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x475a7ec19224c889%3A0x72120b223203574d!2z0JTRgCDQltCw0YDQutCwINCk0L7Qs9Cw0YDQsNGI0LAgMSwg0J_QsNC90YfQtdCy0L4!5e1!3m2!1ssr!2srs!4v1773251197927!5m2!1ssr!2srso&t=&z=13&ie=UTF8&iwloc=&output=embed"
+            src="https://maps.app.goo.gl/ksRhFZ98s5cz8KRS6"
             className="h-64 w-full border-0"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
