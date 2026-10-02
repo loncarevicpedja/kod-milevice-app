@@ -15,7 +15,9 @@ import {
   normalizeProductRows,
   groupProductsByCategory,
   isRezanciCategoryProduct,
+  isDrinkCategoryProduct,
   isClassicPancakeCategory,
+  insertSectionsAfterCategory,
 } from "@/lib/menuUtils";
 import type { CartAddon } from "@/components/cart/CartContext";
 import { PUBLIC_TORTILLAS_VISIBLE } from "@/lib/publicSiteFlags";
@@ -196,17 +198,31 @@ export default async function MenuPage({
 
   const pancakes = products
     .filter(isPancake)
-    .filter((p) => !isRezanciCategoryProduct(p));
+    .filter((p) => !isRezanciCategoryProduct(p))
+    .filter((p) => !(isSavory(p) && isDrinkCategoryProduct(p)));
   const tortillas = products.filter(isTortilla);
   const rezanci = products.filter(isRezanciCategoryProduct);
 
   const pancakeSavory = pancakes.filter(isSavory);
   const pancakeSweet = pancakes.filter(isSweet);
 
-  const savorySections = groupProductsByCategory(pancakeSavory);
-  const sweetSections = groupProductsByCategory(pancakeSweet);
+  const sweetDrinks = groupProductsByCategory(
+    pancakeSweet.filter(isDrinkCategoryProduct),
+  );
+  const savorySections = [
+    ...insertSectionsAfterCategory(
+      groupProductsByCategory(pancakeSavory),
+      groupProductsByCategory(rezanci.filter(isSavory)),
+      ["premium"],
+    ),
+    ...sweetDrinks,
+  ];
+  const sweetSections = insertSectionsAfterCategory(
+    groupProductsByCategory(pancakeSweet),
+    groupProductsByCategory(rezanci.filter(isSweet)),
+    ["sushi", "suši", "суши"],
+  );
   const tortillaSections = groupProductsByCategory(tortillas);
-  const rezanciSections = groupProductsByCategory(rezanci);
 
   const sweetAddons = toCartAddons(addons.filter(isSweetAddon));
   const savoryAddons = toCartAddons(addons.filter(isSavoryAddon));
@@ -285,24 +301,6 @@ export default async function MenuPage({
           </div>
         </section>
       )}
-
-      {(filterType === null || filterType === "palacinke") &&
-        rezanci.length > 0 && (
-          <section className="mt-8">
-            <h2 className="text-xl font-semibold text-brown-soft">Rezanci</h2>
-            <div className="mt-4 rounded-3xl bg-cream/70 p-4">
-              {rezanciSections.map((g) => (
-                <Section
-                  key={`rez-${g.categoryId ?? g.categoryName}`}
-                  title={g.categoryName}
-                  products={g.products}
-                  availableAddons={sweetAddons}
-                  isClassicSection
-                />
-              ))}
-            </div>
-          </section>
-        )}
     </div>
   );
 }

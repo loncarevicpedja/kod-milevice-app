@@ -129,6 +129,7 @@ export function isSavory(row: ProductRow) {
  * Ranije samo `ime.includes("rezan")`; ćirilica „резанци“ ne sadrži taj podstring, niti se gleda `product_category_id`.
  */
 const REZANCI_CATEGORY_IDS: readonly number[] = [6];
+const DRINK_CATEGORY_IDS: readonly number[] = [8];
 
 export function isRezanciCategoryProduct(row: ProductRow) {
   const n = (row.product_category?.name ?? "").toLowerCase();
@@ -136,6 +137,34 @@ export function isRezanciCategoryProduct(row: ProductRow) {
   const id = row.product_category_id;
   if (id != null && REZANCI_CATEGORY_IDS.includes(Number(id))) return true;
   return false;
+}
+
+/** Kategorija „Piće“ – na meniju se prikazuje samo slatka grupa. */
+export function isDrinkCategoryProduct(row: ProductRow) {
+  const n = (row.product_category?.name ?? "").toLowerCase();
+  if (n.includes("pić") || n.includes("pice") || n.includes("пић")) return true;
+  const id = row.product_category_id;
+  return id != null && DRINK_CATEGORY_IDS.includes(Number(id));
+}
+
+/** Ubacuje sekcije odmah ispod kategorije čije ime sadrži neki od markera. */
+export function insertSectionsAfterCategory<T extends { categoryName: string }>(
+  sections: T[],
+  inserted: T[],
+  markers: string[],
+): T[] {
+  if (inserted.length === 0) return sections;
+  const needles = markers.map((m) => m.toLowerCase());
+  const idx = sections.findIndex((s) => {
+    const n = s.categoryName.toLowerCase();
+    return needles.some((m) => n.includes(m));
+  });
+  if (idx === -1) return [...sections, ...inserted];
+  return [
+    ...sections.slice(0, idx + 1),
+    ...inserted,
+    ...sections.slice(idx + 1),
+  ];
 }
 
 /** Grupisanje proizvoda po kategoriji iz baze (naslov sekcije = naziv kategorije) */
@@ -249,9 +278,25 @@ export function getFilteredSections(
   const addonList =
     taste === "slane" ? savoryAddons : taste === "slatke" ? sweetAddons : [];
 
-  const pool = taste === "slane" ? savory : taste === "slatke" ? sweet : [];
+  const sweetDrinks = sweet.filter(isDrinkCategoryProduct);
+  const poolRaw = taste === "slane" ? savory : taste === "slatke" ? sweet : [];
+  const pool =
+    taste === "slane"
+      ? poolRaw.filter((p) => !isDrinkCategoryProduct(p))
+      : poolRaw;
+  const rezanci = pool.filter(isRezanciCategoryProduct);
+  const rest = pool.filter((p) => !isRezanciCategoryProduct(p));
+  const grouped = insertSectionsAfterCategory(
+    groupProductsByCategory(rest),
+    groupProductsByCategory(rezanci),
+    taste === "slane" ? ["premium"] : ["sushi", "suši", "суши"],
+  );
+  const withDrinks =
+    taste === "slane"
+      ? [...grouped, ...groupProductsByCategory(sweetDrinks)]
+      : grouped;
 
-  return groupProductsByCategory(pool).map((g) => {
+  return withDrinks.map((g) => {
     const classic = isClassicPancakeCategory(g.categoryName);
     return {
       title: g.categoryName,
