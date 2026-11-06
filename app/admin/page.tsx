@@ -1,12 +1,27 @@
 import Link from "next/link";
 
 const links = [
-  { href: "/admin/proizvodi", label: "Proizvodi", desc: "Palačinke, tortilje" },
+  { href: "/admin/proizvodi", label: "Proizvodi", desc: "Palačinke, tortilje, OrderNo" },
   { href: "/admin/dodaci", label: "Dodaci", desc: "Slatki i slani dodaci" },
   {
     href: "/admin/kategorije",
     label: "Tipovi i kategorije",
-    desc: "Product type, ukus, kategorija",
+    desc: "Product type, ukus, kategorija, OrderNo",
+  },
+  {
+    href: "/admin/slider",
+    label: "Slider početne",
+    desc: "Slajdovi, promocije, datumi",
+  },
+  {
+    href: "/admin/istaknuto",
+    label: "Istaknuti proizvodi",
+    desc: "Sekcija Izdvajamo – bez izmene kategorije",
+  },
+  {
+    href: "/admin/noviteti",
+    label: "Novitet kartice",
+    desc: "Kartica na vrhu Slane / Slatke",
   },
   { href: "/admin/porudzbine", label: "Porudžbine", desc: "Pregled i status" },
   {

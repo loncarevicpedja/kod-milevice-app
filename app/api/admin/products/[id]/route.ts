@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
 import { requireAdmin, unauthorizedResponse } from "@/lib/adminAuth";
 import { replaceProductAddonSlots } from "@/lib/adminProductAddonSlots";
+import { parseOrderNo } from "@/lib/sortByOrderNo";
 
 export async function PATCH(
   _request: Request,
@@ -20,6 +21,7 @@ export async function PATCH(
     product_type_id,
     taste_type_id,
     product_category_id,
+    order_no,
     addon_slots,
   } = body;
 
@@ -37,6 +39,7 @@ export async function PATCH(
     updates.taste_type_id = taste_type_id ? Number(taste_type_id) : null;
   if (product_category_id !== undefined)
     updates.product_category_id = Number(product_category_id);
+  if (order_no !== undefined) updates.order_no = parseOrderNo(order_no);
 
   if (Object.keys(updates).length === 0 && !Array.isArray(addon_slots)) {
     return NextResponse.json({ error: "Nema podataka za izmenu" }, { status: 400 });

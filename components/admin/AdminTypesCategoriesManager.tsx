@@ -83,8 +83,10 @@ export function AdminTypesCategoriesManager({
           key={section.kind}
           title={section.title}
           addLabel={section.addLabel}
+          kind={section.kind}
           rows={rowsByKind[section.kind]}
           onAdd={() => setAddingKind(section.kind)}
+          onSaved={refetch}
         />
       ))}
 
@@ -107,14 +109,19 @@ export function AdminTypesCategoriesManager({
 function ReferenceTable({
   title,
   addLabel,
+  kind,
   rows,
   onAdd,
+  onSaved,
 }: {
   title: string;
   addLabel: string;
+  kind: ReferenceKind;
   rows: RefRow[];
   onAdd: () => void;
+  onSaved: () => void;
 }) {
+  const showOrder = kind === "product_category";
   return (
     <div className="mb-8 mt-8">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -133,13 +140,19 @@ function ReferenceTable({
             <tr>
               <th className="px-4 py-3 font-semibold text-gray-800">ID</th>
               <th className="px-4 py-3 font-semibold text-gray-800">Naziv</th>
+              {showOrder && (
+                <th className="px-4 py-3 font-semibold text-gray-800">OrderNo</th>
+              )}
               <th className="px-4 py-3 font-semibold text-gray-800">Aktivan</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={3} className="px-4 py-6 text-center text-gray-500">
+                <td
+                  colSpan={showOrder ? 4 : 3}
+                  className="px-4 py-6 text-center text-gray-500"
+                >
                   Nema zapisa.
                 </td>
               </tr>
@@ -153,6 +166,30 @@ function ReferenceTable({
                   <td className="px-4 py-3 font-medium text-gray-800">
                     {r.name}
                   </td>
+                  {showOrder && (
+                    <td className="px-4 py-3">
+                      <input
+                        type="number"
+                        defaultValue={
+                          "order_no" in r ? (r.order_no ?? 1000) : 1000
+                        }
+                        className="w-20 rounded border border-gray-200 px-2 py-1 text-sm"
+                        onBlur={async (e) => {
+                          const v = Number(e.target.value);
+                          await fetch("/api/admin/reference", {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              kind,
+                              id: r.id,
+                              order_no: v,
+                            }),
+                          });
+                          onSaved();
+                        }}
+                      />
+                    </td>
+                  )}
                   <td className="px-4 py-3">
                     {r.is_active ? (
                       <span className="text-green-600">Da</span>
@@ -186,6 +223,7 @@ function AddReferenceModal({
   const section = SECTIONS.find((s) => s.kind === kind);
   const [name, setName] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [orderNo, setOrderNo] = useState("1000");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -198,6 +236,7 @@ function AddReferenceModal({
         kind,
         name: name.trim(),
         is_active: isActive,
+        order_no: Number(orderNo),
       }),
     });
     setSaving(false);
@@ -238,6 +277,19 @@ function AddReferenceModal({
               autoFocus
             />
           </div>
+          {kind === "product_category" && (
+            <div>
+              <label className="block text-xs font-medium text-gray-600">
+                OrderNo
+              </label>
+              <input
+                type="number"
+                value={orderNo}
+                onChange={(e) => setOrderNo(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+              />
+            </div>
+          )}
           <label className="flex items-center gap-2">
             <input
               type="checkbox"

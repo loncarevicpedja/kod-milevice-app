@@ -12,6 +12,7 @@ type ProductRow = {
   product_type_id: number;
   taste_type_id: number | null;
   product_category_id: number;
+  order_no: number;
   product_type: { name: string } | null;
   taste_type: { name: string } | null;
   product_category: { name: string } | null;
@@ -45,6 +46,7 @@ async function getProducts(): Promise<ProductRow[]> {
       product_type_id,
       taste_type_id,
       product_category_id,
+      order_no,
       product_type:product_type_id ( name ),
       taste_type:taste_type_id ( name ),
       product_category:product_category_id ( name ),
@@ -57,6 +59,7 @@ async function getProducts(): Promise<ProductRow[]> {
       )
     `
     )
+    .order("order_no", { ascending: true })
     .order("name", { ascending: true });
 
   if (error) {
@@ -74,6 +77,7 @@ async function getProducts(): Promise<ProductRow[]> {
     product_type_id: number;
     taste_type_id: number | null;
     product_category_id: number;
+    order_no?: number;
     product_type: Rel;
     taste_type: Rel;
     product_category: Rel;
@@ -100,6 +104,7 @@ async function getProducts(): Promise<ProductRow[]> {
       product_type_id: row.product_type_id,
       taste_type_id: row.taste_type_id,
       product_category_id: row.product_category_id,
+      order_no: row.order_no ?? 1000,
       product_type,
       taste_type,
       product_category,

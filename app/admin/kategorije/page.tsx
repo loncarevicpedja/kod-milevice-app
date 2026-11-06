@@ -29,7 +29,8 @@ async function getTasteTypes(): Promise<TasteType[]> {
 async function getProductCategories(): Promise<ProductCategory[]> {
   const { data, error } = await supabase
     .from("product_category")
-    .select("id, name, is_active")
+    .select("id, name, is_active, order_no")
+    .order("order_no", { ascending: true })
     .order("name", { ascending: true });
   if (error) {
     console.error("product_category error:", error);

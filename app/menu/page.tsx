@@ -1,10 +1,9 @@
 import Image from "next/image";
-import { supabase } from "@/lib/supabaseClient";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { MenuCartNotice } from "@/components/menu/MenuCartNotice";
+import { PromoHighlightSlider } from "@/components/menu/PromoHighlightCard";
 import {
   type ProductRow,
-  type AddonRow,
   isPancake,
   isTortilla,
   isSweet,
@@ -12,7 +11,6 @@ import {
   isSweetAddon,
   isSavoryAddon,
   toCartAddons,
-  normalizeProductRows,
   groupProductsByCategory,
   isRezanciCategoryProduct,
   isDrinkCategoryProduct,
@@ -21,86 +19,8 @@ import {
 } from "@/lib/menuUtils";
 import type { CartAddon } from "@/components/cart/CartContext";
 import { PUBLIC_TORTILLAS_VISIBLE } from "@/lib/publicSiteFlags";
-
-async function getProducts(): Promise<ProductRow[]> {
-  const { data, error } = await supabase
-    .from("product")
-    .select(
-      `
-      id,
-      name,
-      description,
-      price,
-      image_url,
-      product_category_id,
-      product_type:product_type_id ( name ),
-      taste_type:taste_type_id ( name ),
-      product_category:product_category_id ( name ),
-      product_addon_slot (
-        id,
-        sort_order,
-        label,
-        max_select,
-        product_addon_slot_addon (
-          addon_id,
-          addon (
-            id,
-            name,
-            price,
-            is_active
-          )
-        )
-      )
-    `,
-    )
-    .eq("is_active", true)
-    .order("name", { ascending: true });
-
-  if (error) {
-    console.error("Error loading products", error);
-    return [];
-  }
-
-  return normalizeProductRows(
-    (data ?? []) as Parameters<typeof normalizeProductRows>[0],
-  );
-}
-
-async function getAddons(): Promise<AddonRow[]> {
-  const { data, error } = await supabase
-    .from("addon")
-    .select(
-      `
-      id,
-      name,
-      price,
-      addon_kind,
-      taste_type:taste_type_id ( name )
-    `,
-    )
-    .eq("is_active", true)
-    .order("price", { ascending: true });
-
-  if (error) {
-    console.error("Error loading addons", error);
-    return [];
-  }
-
-  type Rel = { name: string } | { name: string }[] | null;
-  const rows = (data ?? []) as Array<{
-    id: number;
-    name: string;
-    price: number | string;
-    addon_kind: string | null;
-    taste_type: Rel;
-  }>;
-  return rows.map((row) => ({
-    ...row,
-    taste_type: Array.isArray(row.taste_type)
-      ? row.taste_type[0] ?? null
-      : row.taste_type,
-  })) as AddonRow[];
-}
+import { loadActiveHighlights } from "@/lib/loadHomePromo";
+import { loadPublicAddons, loadPublicProducts } from "@/lib/loadPublicCatalog";
 
 function Section({
   title,
@@ -191,9 +111,10 @@ export default async function MenuPage({
         ? "palacinke"
         : null;
 
-  const [products, addons] = await Promise.all([
-    getProducts(),
-    getAddons(),
+  const [products, addons, highlights] = await Promise.all([
+    loadPublicProducts(),
+    loadPublicAddons(),
+    loadActiveHighlights(),
   ]);
 
   const pancakes = products
@@ -226,6 +147,8 @@ export default async function MenuPage({
 
   const sweetAddons = toCartAddons(addons.filter(isSweetAddon));
   const savoryAddons = toCartAddons(addons.filter(isSavoryAddon));
+  const savoryHighlights = highlights.filter((h) => h.taste === "slane");
+  const sweetHighlights = highlights.filter((h) => h.taste === "slatke");
   const showOnlyPancakes = filterType === "palacinke";
   const showOnlyTortillas = filterType === "tortilje";
   const showTortillaSection =
@@ -255,6 +178,14 @@ export default async function MenuPage({
 
           <div className="mt-4 rounded-3xl bg-cream/70 p-4">
             <h3 className="text-sm font-semibold text-brown-soft/90">Slane</h3>
+            {savoryHighlights.length > 0 && (
+              <div className="mt-3">
+                <PromoHighlightSlider
+                  highlights={savoryHighlights}
+                  availableAddons={savoryAddons}
+                />
+              </div>
+            )}
             {savorySections.map((g) => {
               const classic = isClassicPancakeCategory(g.categoryName);
               return (
@@ -271,6 +202,14 @@ export default async function MenuPage({
 
           <div className="mt-6 rounded-3xl bg-cream/70 p-4">
             <h3 className="text-sm font-semibold text-brown-soft/90">Slatke</h3>
+            {sweetHighlights.length > 0 && (
+              <div className="mt-3">
+                <PromoHighlightSlider
+                  highlights={sweetHighlights}
+                  availableAddons={sweetAddons}
+                />
+              </div>
+            )}
             {sweetSections.map((g) => {
               const classic = isClassicPancakeCategory(g.categoryName);
               return (

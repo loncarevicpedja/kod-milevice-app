@@ -4,6 +4,7 @@ import { requireAdmin, unauthorizedResponse } from "@/lib/adminAuth";
 import { replaceProductAddonSlots } from "@/lib/adminProductAddonSlots";
 import { isClassicPancakeCategory } from "@/lib/classicPancakeCategory";
 import { mapProductRecordForAdmin } from "@/lib/productAddonSlots";
+import { parseOrderNo } from "@/lib/sortByOrderNo";
 
 export async function GET() {
   if (!(await requireAdmin())) return unauthorizedResponse();
@@ -21,6 +22,7 @@ export async function GET() {
       product_type_id,
       taste_type_id,
       product_category_id,
+      order_no,
       product_type:product_type_id(name),
       taste_type:taste_type_id(name),
       product_category:product_category_id(name),
@@ -33,6 +35,7 @@ export async function GET() {
       )
     `
     )
+    .order("order_no", { ascending: true })
     .order("name", { ascending: true });
 
   if (error) {
@@ -60,6 +63,7 @@ export async function POST(request: Request) {
     product_type_id,
     taste_type_id,
     product_category_id,
+    order_no,
     addon_slots,
   } = body;
 
@@ -81,6 +85,7 @@ export async function POST(request: Request) {
       product_type_id: Number(product_type_id),
       taste_type_id: taste_type_id ? Number(taste_type_id) : null,
       product_category_id: Number(product_category_id),
+      order_no: parseOrderNo(order_no),
       order_status: "available",
     })
     .select("id")

@@ -23,6 +23,7 @@ type Product = {
   product_type_id: number;
   taste_type_id: number | null;
   product_category_id: number;
+  order_no?: number;
   product_type?: { name: string } | null;
   taste_type?: { name: string } | null;
   product_category?: { name: string } | null;
@@ -136,6 +137,7 @@ export function AdminProductsManager({
               <th className="px-4 py-3 font-semibold text-gray-800">Ukus</th>
               <th className="px-4 py-3 font-semibold text-gray-800">Kategorija</th>
               <th className="px-4 py-3 font-semibold text-gray-800">Cena</th>
+              <th className="px-4 py-3 font-semibold text-gray-800">OrderNo</th>
               <th className="px-4 py-3 font-semibold text-gray-800">Aktivan</th>
               <th className="px-4 py-3 font-semibold text-gray-800">Akcije</th>
             </tr>
@@ -143,7 +145,7 @@ export function AdminProductsManager({
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-6 text-center text-gray-500">
+                <td colSpan={9} className="px-4 py-6 text-center text-gray-500">
                   {search.trim() ? "Nema rezultata za pretragu." : "Nema proizvoda."}
                 </td>
               </tr>
@@ -156,6 +158,7 @@ export function AdminProductsManager({
                   <td className="px-4 py-3 text-gray-600">{p.taste_type?.name ?? "—"}</td>
                   <td className="px-4 py-3 text-gray-600">{p.product_category?.name ?? "—"}</td>
                   <td className="px-4 py-3 text-gray-600">{Number(p.price).toFixed(0)} RSD</td>
+                  <td className="px-4 py-3 text-gray-600">{p.order_no ?? 1000}</td>
                   <td className="px-4 py-3">
                     {p.is_active ? (
                       <span className="text-green-600">Da</span>
@@ -276,6 +279,7 @@ function ProductFormModal({
   const [productCategoryId, setProductCategoryId] = useState(
     product?.product_category_id?.toString() ?? (productCategories[0]?.id.toString() ?? "")
   );
+  const [orderNo, setOrderNo] = useState(String(product?.order_no ?? 1000));
 
   const initialSlots = useMemo<SlotEditorRow[]>(() => {
     const raw = product?.addon_slots ?? [];
@@ -347,6 +351,7 @@ function ProductFormModal({
       product_type_id: Number(productTypeId),
       taste_type_id: tasteTypeId ? Number(tasteTypeId) : null,
       product_category_id: Number(productCategoryId),
+      order_no: Number(orderNo),
       addon_slots,
     };
     const url = isEdit
@@ -388,6 +393,18 @@ function ProductFormModal({
               rows={2}
               className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
             />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600">OrderNo</label>
+            <input
+              type="number"
+              value={orderNo}
+              onChange={(e) => setOrderNo(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+            />
+            <p className="mt-1 text-xs text-gray-400">
+              Manji broj = prikaz višlje u kategoriji.
+            </p>
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600">Cena (RSD) *</label>

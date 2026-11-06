@@ -3,17 +3,18 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
 import {
   getFilteredSections,
   type ProductRow,
   type AddonRow,
-  normalizeProductRows,
-  normalizeAddonRows,
 } from "@/lib/menuUtils";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { MenuCartNotice } from "@/components/menu/MenuCartNotice";
+import { PromoHighlightSlider } from "@/components/menu/PromoHighlightCard";
 import { PUBLIC_TORTILLAS_VISIBLE } from "@/lib/publicSiteFlags";
+import { loadActiveHighlights } from "@/lib/loadHomePromo";
+import { loadPublicAddons, loadPublicProducts } from "@/lib/loadPublicCatalog";
+import type { ResolvedHighlight } from "@/lib/promoTypes";
 
 type Step = 0 | 1 | 2;
 
@@ -42,6 +43,7 @@ export default function NarucivanjePage() {
   const [taste, setTaste] = useState<"slane" | "slatke" | null>(null);
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [addons, setAddons] = useState<AddonRow[]>([]);
+  const [highlights, setHighlights] = useState<ResolvedHighlight[]>([]);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -67,67 +69,16 @@ export default function NarucivanjePage() {
     setLoading(true);
 
     async function load() {
-      const [prodRes, addonRes] = await Promise.all([
-        supabase
-          .from("product")
-          .select(
-            `
-            id,
-            name,
-            description,
-            price,
-            image_url,
-            product_category_id,
-            product_type:product_type_id ( name ),
-            taste_type:taste_type_id ( name ),
-            product_category:product_category_id ( name ),
-            product_addon_slot (
-              id,
-              sort_order,
-              label,
-              max_select,
-              product_addon_slot_addon (
-                addon_id,
-                addon (
-                  id,
-                  name,
-                  price,
-                  is_active
-                )
-              )
-            )
-          `,
-          )
-          .eq("is_active", true)
-          .order("name", { ascending: true }),
-        supabase
-          .from("addon")
-          .select(
-            `
-            id,
-            name,
-            price,
-            addon_kind,
-            taste_type:taste_type_id ( name )
-          `,
-          )
-          .eq("is_active", true)
-          .order("id", { ascending: true }),
+      const [nextProducts, nextAddons, nextHighlights] = await Promise.all([
+        loadPublicProducts(),
+        loadPublicAddons(),
+        loadActiveHighlights(),
       ]);
 
       if (cancelled) return;
-      if (!prodRes.error)
-        setProducts(
-          normalizeProductRows(
-            (prodRes.data ?? []) as Parameters<typeof normalizeProductRows>[0],
-          ),
-        );
-      if (!addonRes.error)
-        setAddons(
-          normalizeAddonRows(
-            (addonRes.data ?? []) as Parameters<typeof normalizeAddonRows>[0],
-          ),
-        );
+      setProducts(nextProducts);
+      setAddons(nextAddons);
+      setHighlights(nextHighlights);
       setLoading(false);
     }
 
@@ -181,6 +132,12 @@ export default function NarucivanjePage() {
       : [];
 
   const hasAnyProducts = sections.some((s) => s.products.length > 0);
+  const stepHighlights =
+    type === "palacinke" && taste
+      ? highlights.filter((h) => h.taste === taste)
+      : [];
+  const highlightAddons = sections.find((s) => s.isClassicSection)
+    ?.availableAddons;
 
   return (
     <div className="space-y-6">
@@ -367,6 +324,12 @@ export default function NarucivanjePage() {
             </p>
           ) : (
             <div className="space-y-6">
+              {stepHighlights.length > 0 && (
+                <PromoHighlightSlider
+                  highlights={stepHighlights}
+                  availableAddons={highlightAddons}
+                />
+              )}
               {sections.map(
                 (sec) =>
                   sec.products.length > 0 && (

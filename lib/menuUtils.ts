@@ -2,6 +2,7 @@ import type { CartAddon } from "@/components/cart/CartContext";
 import { isClassicPancakeCategory } from "@/lib/classicPancakeCategory";
 import type { ProductAddonSlotNormalized } from "@/lib/productAddonSlots";
 import { normalizeProductAddonSlots } from "@/lib/productAddonSlots";
+import { compareByOrderNo } from "@/lib/sortByOrderNo";
 
 export { isClassicPancakeCategory };
 
@@ -11,10 +12,11 @@ export type ProductRow = {
   description: string | null;
   price: number;
   image_url: string | null;
+  order_no: number | null;
   product_type: { name: string } | null;
   taste_type: { name: string } | null;
   product_category_id: number | null;
-  product_category: { name: string } | null;
+  product_category: { name: string; order_no?: number | null } | null;
   /** Per-product addon groups from DB (tortilje); empty = no picker */
   addonSlots: ProductAddonSlotNormalized[];
 };
@@ -36,11 +38,12 @@ export function normalizeProductRows(
     description: string | null;
     price: number;
     image_url: string | null;
+    order_no?: number | null;
     product_type_id?: number;
     product_category_id?: number | null;
     product_type?: Rel;
     taste_type?: Rel;
-    product_category?: Rel;
+    product_category?: Rel | { name: string; order_no?: number | null };
     product_addon_slot?: unknown;
   }>
 ): ProductRow[] {
@@ -48,12 +51,26 @@ export function normalizeProductRows(
     const slots = normalizeProductAddonSlots(
       row.product_addon_slot as Parameters<typeof normalizeProductAddonSlots>[0]
     );
+    const catRaw = Array.isArray(row.product_category)
+      ? row.product_category[0] ?? null
+      : row.product_category ?? null;
+    const cat =
+      catRaw && typeof catRaw === "object" && "name" in catRaw
+        ? {
+            name: String((catRaw as { name: string }).name ?? ""),
+            order_no:
+              "order_no" in catRaw
+                ? ((catRaw as { order_no?: number | null }).order_no ?? null)
+                : null,
+          }
+        : null;
     return {
       id: row.id,
       name: row.name,
       description: row.description,
       price: row.price,
       image_url: row.image_url,
+      order_no: row.order_no != null ? Number(row.order_no) : null,
       product_category_id:
         row.product_category_id != null ? Number(row.product_category_id) : null,
       product_type: Array.isArray(row.product_type)
@@ -62,9 +79,7 @@ export function normalizeProductRows(
       taste_type: Array.isArray(row.taste_type)
         ? row.taste_type[0] ?? null
         : row.taste_type ?? null,
-      product_category: Array.isArray(row.product_category)
-        ? row.product_category[0] ?? null
-        : row.product_category ?? null,
+      product_category: cat,
       addonSlots: slots,
     };
   });
@@ -175,7 +190,12 @@ export function groupProductsByCategory(products: ProductRow[]): {
 }[] {
   const buckets = new Map<
     string,
-    { categoryId: number | null; name: string; products: ProductRow[] }
+    {
+      categoryId: number | null;
+      name: string;
+      order_no: number | null;
+      products: ProductRow[];
+    }
   >();
 
   for (const p of products) {
@@ -190,6 +210,7 @@ export function groupProductsByCategory(products: ProductRow[]): {
       buckets.set(key, {
         categoryId: id != null && !Number.isNaN(Number(id)) ? Number(id) : null,
         name,
+        order_no: p.product_category?.order_no ?? null,
         products: [],
       });
     }
@@ -199,15 +220,21 @@ export function groupProductsByCategory(products: ProductRow[]): {
   const out = [...buckets.values()].map((v) => ({
     categoryId: v.categoryId,
     categoryName: v.name,
-    products: v.products,
+    products: [...v.products].sort(compareByOrderNo),
+    order_no: v.order_no,
   }));
 
   out.sort((a, b) => {
-  const aId = a.categoryId ?? 9999;
-  const bId = b.categoryId ?? 9999;
-
-  return aId - bId;
-});
+    const aMissing = a.order_no == null;
+    const bMissing = b.order_no == null;
+    if (aMissing && bMissing) {
+      return (a.categoryId ?? 9999) - (b.categoryId ?? 9999);
+    }
+    return compareByOrderNo(
+      { order_no: a.order_no, name: a.categoryName, id: a.categoryId ?? 9999 },
+      { order_no: b.order_no, name: b.categoryName, id: b.categoryId ?? 9999 },
+    );
+  });
   return out;
 }
 

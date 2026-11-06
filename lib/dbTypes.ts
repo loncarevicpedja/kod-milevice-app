@@ -14,6 +14,7 @@ export type ProductCategory = {
   id: number;
   name: string;
   is_active: boolean;
+  order_no?: number;
 };
 
 export type Product = {
@@ -26,6 +27,7 @@ export type Product = {
   price: number;
   is_active: boolean;
   order_status: string;
+  order_no?: number;
 };
 
 export type Addon = {
