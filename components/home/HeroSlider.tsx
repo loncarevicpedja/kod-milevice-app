@@ -41,7 +41,7 @@ export function HeroSlider({ slides }: { slides: ResolvedHomeSlide[] }) {
 
   return (
     <div
-      className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-sky/25"
+      className="relative overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-sky/25"
       onMouseEnter={() => {
         paused.current = true;
       }}
@@ -63,7 +63,7 @@ export function HeroSlider({ slides }: { slides: ResolvedHomeSlide[] }) {
       }}
     >
       <div className="grid min-h-[190px] grid-cols-2 sm:min-h-[240px] md:min-h-[300px]">
-        <div className="flex flex-col justify-center px-4 py-4 sm:px-6 md:px-8">
+        <div className="flex flex-col justify-center py-4 pl-11 pr-3 sm:px-6 md:pl-14 md:pr-8">
           {slide.badge && (
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-rose sm:text-xs">
               {slide.badge}
@@ -99,28 +99,29 @@ export function HeroSlider({ slides }: { slides: ResolvedHomeSlide[] }) {
               sizes="(max-width: 768px) 50vw, 480px"
             />
           ) : null}
-          {items.length > 1 && (
-            <>
-              <button
-                type="button"
-                aria-label="Prethodni slajd"
-                onClick={prev}
-                className="absolute left-1.5 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-base leading-none text-brown-soft shadow-sm ring-1 ring-black/10 sm:left-2 sm:h-8 sm:w-8"
-              >
-                ‹
-              </button>
-              <button
-                type="button"
-                aria-label="Sledeći slajd"
-                onClick={next}
-                className="absolute right-1.5 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-base leading-none text-brown-soft shadow-sm ring-1 ring-black/10 sm:right-2 sm:h-8 sm:w-8"
-              >
-                ›
-              </button>
-            </>
-          )}
         </div>
       </div>
+
+      {items.length > 1 && (
+        <>
+          <button
+            type="button"
+            aria-label="Prethodni slajd"
+            onClick={prev}
+            className="absolute left-2 top-[42%] z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-lg leading-none text-brown-soft shadow-sm ring-1 ring-black/10"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            aria-label="Sledeći slajd"
+            onClick={next}
+            className="absolute right-2 top-[42%] z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-lg leading-none text-brown-soft shadow-sm ring-1 ring-black/10"
+          >
+            ›
+          </button>
+        </>
+      )}
 
       {items.length > 1 && (
         <div className="flex justify-center gap-1.5 py-2.5">

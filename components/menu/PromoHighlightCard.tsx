@@ -53,7 +53,7 @@ export function PromoHighlightSlider({
 
   return (
     <article
-      className="mb-5 overflow-hidden rounded-3xl shadow-sm ring-1 ring-rose/30"
+      className="relative mb-5 overflow-hidden rounded-3xl shadow-sm ring-1 ring-rose/30"
       onMouseEnter={() => {
         paused.current = true;
       }}
@@ -75,7 +75,7 @@ export function PromoHighlightSlider({
       }}
     >
       <div className="grid min-h-[170px] grid-cols-2 sm:min-h-[220px] md:min-h-[260px]">
-        <div className="flex flex-col justify-center bg-rose/15 px-3 py-4 sm:px-6">
+        <div className="flex flex-col justify-center bg-rose/15 py-4 pl-11 pr-3 sm:pl-12 sm:pr-6">
           {highlight.badge && (
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-rose">
               {highlight.badge}
@@ -99,45 +99,32 @@ export function PromoHighlightSlider({
               sizes="(max-width: 768px) 50vw, 480px"
             />
           ) : null}
-          {items.length > 1 && (
-            <>
-              <button
-                type="button"
-                aria-label="Prethodni novitet"
-                onClick={prev}
-                className="absolute left-1.5 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-base leading-none text-brown-soft shadow-sm ring-1 ring-black/10 sm:left-2 sm:h-8 sm:w-8"
-              >
-                ‹
-              </button>
-              <button
-                type="button"
-                aria-label="Sledeći novitet"
-                onClick={next}
-                className="absolute right-1.5 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-base leading-none text-brown-soft shadow-sm ring-1 ring-black/10 sm:right-2 sm:h-8 sm:w-8"
-              >
-                ›
-              </button>
-            </>
-          )}
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 bg-rose/15 px-3 py-3 sm:px-6">
-        <p className="shrink-0 text-sm font-semibold text-brown-soft sm:text-base">
-          {p.price.toFixed(0)} RSD
-        </p>
-        <AddToCartButton
-          productId={p.id}
-          name={p.name}
-          basePrice={p.price}
-          addonSlots={p.addonSlots.length > 0 ? p.addonSlots : undefined}
-          isClassic={classic}
-          availableAddons={classic ? availableAddons : undefined}
-        />
-      </div>
+      {items.length > 1 && (
+        <>
+          <button
+            type="button"
+            aria-label="Prethodni novitet"
+            onClick={prev}
+            className="absolute left-2 top-[38%] z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-lg leading-none text-brown-soft shadow-sm ring-1 ring-black/10"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            aria-label="Sledeći novitet"
+            onClick={next}
+            className="absolute right-2 top-[38%] z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-lg leading-none text-brown-soft shadow-sm ring-1 ring-black/10"
+          >
+            ›
+          </button>
+        </>
+      )}
 
       {items.length > 1 && (
-        <div className="flex justify-center gap-1.5 bg-rose/15 pb-3">
+        <div className="flex justify-center gap-1.5 bg-rose/15 pt-2">
           {items.map((item, i) => (
             <button
               key={item.id}
@@ -151,6 +138,20 @@ export function PromoHighlightSlider({
           ))}
         </div>
       )}
+
+      <div className="flex items-center justify-between gap-3 bg-rose/15 py-3 pl-11 pr-3 sm:pl-12 sm:pr-6">
+        <p className="shrink-0 text-sm font-semibold text-brown-soft sm:text-base">
+          {p.price.toFixed(0)} RSD
+        </p>
+        <AddToCartButton
+          productId={p.id}
+          name={p.name}
+          basePrice={p.price}
+          addonSlots={p.addonSlots.length > 0 ? p.addonSlots : undefined}
+          isClassic={classic}
+          availableAddons={classic ? availableAddons : undefined}
+        />
+      </div>
     </article>
   );
 }
