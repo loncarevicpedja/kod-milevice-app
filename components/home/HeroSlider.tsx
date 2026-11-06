@@ -41,7 +41,7 @@ export function HeroSlider({ slides }: { slides: ResolvedHomeSlide[] }) {
 
   return (
     <div
-      className="relative overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-sky/25"
+      className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-sky/25"
       onMouseEnter={() => {
         paused.current = true;
       }}
@@ -62,32 +62,34 @@ export function HeroSlider({ slides }: { slides: ResolvedHomeSlide[] }) {
         else prev();
       }}
     >
-      <div className="grid min-h-[200px] grid-cols-2 sm:min-h-[240px] md:min-h-[300px]">
-        <div className="flex flex-col justify-center bg-white px-4 py-5 sm:px-6 md:px-8">
+      <div className="grid min-h-[190px] grid-cols-2 sm:min-h-[240px] md:min-h-[300px]">
+        <div className="flex flex-col justify-center px-4 py-4 sm:px-6 md:px-8">
           {slide.badge && (
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-rose sm:text-xs">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-rose sm:text-xs">
               {slide.badge}
             </p>
           )}
-          <h1 className="font-bakerie mt-1 text-xl leading-tight text-brown-soft sm:text-3xl md:text-4xl">
+          <h1 className="font-bakerie mt-1 text-lg leading-snug text-brown-soft sm:text-3xl md:text-4xl">
             {slide.title}
           </h1>
           {slide.subtitle && (
-            <p className="mt-1 text-sm font-medium text-rose">{slide.subtitle}</p>
+            <p className="mt-1 text-xs font-medium text-rose sm:text-sm">
+              {slide.subtitle}
+            </p>
           )}
           {slide.description && (
-            <p className="mt-2 text-[11px] leading-relaxed text-brown-soft/80 sm:text-sm">
+            <p className="mt-2 line-clamp-4 text-[11px] leading-relaxed text-brown-soft/80 sm:line-clamp-none sm:text-sm">
               {slide.description}
             </p>
           )}
           {slide.price_label && (
-            <p className="mt-3 text-sm font-semibold text-brown-soft">
+            <p className="mt-2 text-sm font-semibold text-brown-soft">
               {slide.price_label}
             </p>
           )}
         </div>
 
-        <div className="relative min-h-[200px] bg-sky/15 sm:min-h-[240px] md:min-h-[300px]">
+        <div className="relative min-h-[190px] bg-sky/15 sm:min-h-[240px] md:min-h-[300px]">
           {slide.image_url ? (
             <PromoImage
               src={slide.image_url}
@@ -97,41 +99,43 @@ export function HeroSlider({ slides }: { slides: ResolvedHomeSlide[] }) {
               sizes="(max-width: 768px) 50vw, 480px"
             />
           ) : null}
+          {items.length > 1 && (
+            <>
+              <button
+                type="button"
+                aria-label="Prethodni slajd"
+                onClick={prev}
+                className="absolute left-1.5 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-base leading-none text-brown-soft shadow-sm ring-1 ring-black/10 sm:left-2 sm:h-8 sm:w-8"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                aria-label="Sledeći slajd"
+                onClick={next}
+                className="absolute right-1.5 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-base leading-none text-brown-soft shadow-sm ring-1 ring-black/10 sm:right-2 sm:h-8 sm:w-8"
+              >
+                ›
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       {items.length > 1 && (
-        <>
-          <button
-            type="button"
-            aria-label="Prethodni slajd"
-            onClick={prev}
-            className="absolute left-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-lg leading-none text-brown-soft shadow-sm ring-1 ring-black/5"
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            aria-label="Sledeći slajd"
-            onClick={next}
-            className="absolute right-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-lg leading-none text-brown-soft shadow-sm ring-1 ring-black/5"
-          >
-            ›
-          </button>
-          <div className="absolute bottom-3 left-0 right-0 z-20 flex justify-center gap-1.5">
-            {items.map((item, i) => (
-              <button
-                key={item.id}
-                type="button"
-                aria-label={`Slajd ${i + 1}`}
-                onClick={() => setIndex(i)}
-                className={`h-2 w-2 rounded-full shadow-sm ring-1 ring-white/70 transition ${
-                  i === index ? "bg-rose" : "bg-white/80"
-                }`}
-              />
-            ))}
-          </div>
-        </>
+        <div className="flex justify-center gap-1.5 py-2.5">
+          {items.map((item, i) => (
+            <button
+              key={item.id}
+              type="button"
+              aria-label={`Slajd ${i + 1}`}
+              onClick={() => setIndex(i)}
+              className={`h-2 w-2 rounded-full transition ${
+                i === index ? "bg-rose" : "bg-sky"
+              }`}
+            />
+          ))}
+        </div>
       )}
     </div>
   );

@@ -154,7 +154,7 @@ export function AddToCartButton({
             : undefined
         }
         onClick={handleAdd}
-        className={`relative inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold shadow-md transition ${
+        className={`relative inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold shadow-md transition ${
           cartDisabledBySettings || settingsLoading
             ? "cursor-not-allowed bg-brown-soft/25 text-brown-soft/70 shadow-none"
             : "bg-rose text-white shadow-rose/40 hover:bg-rose/90"

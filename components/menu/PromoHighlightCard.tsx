@@ -53,7 +53,7 @@ export function PromoHighlightSlider({
 
   return (
     <article
-      className="relative mb-5 overflow-hidden rounded-3xl shadow-sm ring-1 ring-rose/30"
+      className="mb-5 overflow-hidden rounded-3xl shadow-sm ring-1 ring-rose/30"
       onMouseEnter={() => {
         paused.current = true;
       }}
@@ -74,53 +74,23 @@ export function PromoHighlightSlider({
         else prev();
       }}
     >
-      <div className="grid min-h-[200px] grid-cols-2 sm:min-h-[240px] md:min-h-[280px]">
-        <div className="flex flex-col bg-rose/15">
-          <div className="flex flex-1 flex-col justify-center px-4 py-5 sm:px-6">
-            {highlight.badge && (
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-rose">
-                {highlight.badge}
-              </p>
-            )}
-            <h3 className="font-bakerie mt-1 text-xl leading-tight text-brown-soft sm:text-2xl md:text-3xl">
-              {highlight.title}
-            </h3>
-            {highlight.description && (
-              <p className="mt-2 text-[11px] leading-relaxed text-brown-soft/80 sm:text-sm">
-                {highlight.description}
-              </p>
-            )}
-          </div>
-          <div className="flex items-center justify-between gap-3 px-4 pb-4 sm:px-6">
-            <p className="text-base font-semibold text-brown-soft">
-              {p.price.toFixed(0)} RSD
+      <div className="grid min-h-[170px] grid-cols-2 sm:min-h-[220px] md:min-h-[260px]">
+        <div className="flex flex-col justify-center bg-rose/15 px-3 py-4 sm:px-6">
+          {highlight.badge && (
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-rose">
+              {highlight.badge}
             </p>
-            {items.length > 1 && (
-              <div className="flex justify-center gap-1.5">
-                {items.map((item, i) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    aria-label={`Novitet ${i + 1}`}
-                    onClick={() => setIndex(i)}
-                    className={`h-2 w-2 rounded-full transition ${
-                      i === index ? "bg-rose" : "bg-brown-soft/25"
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-            <AddToCartButton
-              productId={p.id}
-              name={p.name}
-              basePrice={p.price}
-              addonSlots={p.addonSlots.length > 0 ? p.addonSlots : undefined}
-              isClassic={classic}
-              availableAddons={classic ? availableAddons : undefined}
-            />
-          </div>
+          )}
+          <h3 className="font-bakerie mt-1 text-lg leading-snug text-brown-soft sm:text-2xl md:text-3xl">
+            {highlight.title}
+          </h3>
+          {highlight.description && (
+            <p className="mt-2 line-clamp-4 text-[11px] leading-relaxed text-brown-soft/80 sm:line-clamp-none sm:text-sm">
+              {highlight.description}
+            </p>
+          )}
         </div>
-        <div className="relative min-h-[200px] bg-sky/20 sm:min-h-[240px] md:min-h-[280px]">
+        <div className="relative min-h-[170px] bg-sky/20 sm:min-h-[220px] md:min-h-[260px]">
           {highlight.image_url ? (
             <PromoImage
               src={highlight.image_url}
@@ -129,28 +99,57 @@ export function PromoHighlightSlider({
               sizes="(max-width: 768px) 50vw, 480px"
             />
           ) : null}
+          {items.length > 1 && (
+            <>
+              <button
+                type="button"
+                aria-label="Prethodni novitet"
+                onClick={prev}
+                className="absolute left-1.5 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-base leading-none text-brown-soft shadow-sm ring-1 ring-black/10 sm:left-2 sm:h-8 sm:w-8"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                aria-label="Sledeći novitet"
+                onClick={next}
+                className="absolute right-1.5 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-base leading-none text-brown-soft shadow-sm ring-1 ring-black/10 sm:right-2 sm:h-8 sm:w-8"
+              >
+                ›
+              </button>
+            </>
+          )}
         </div>
       </div>
 
+      <div className="flex items-center justify-between gap-3 bg-rose/15 px-3 py-3 sm:px-6">
+        <p className="shrink-0 text-sm font-semibold text-brown-soft sm:text-base">
+          {p.price.toFixed(0)} RSD
+        </p>
+        <AddToCartButton
+          productId={p.id}
+          name={p.name}
+          basePrice={p.price}
+          addonSlots={p.addonSlots.length > 0 ? p.addonSlots : undefined}
+          isClassic={classic}
+          availableAddons={classic ? availableAddons : undefined}
+        />
+      </div>
+
       {items.length > 1 && (
-        <>
-          <button
-            type="button"
-            aria-label="Prethodni novitet"
-            onClick={prev}
-            className="absolute left-2 top-[42%] z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-lg leading-none text-brown-soft shadow-sm ring-1 ring-black/5"
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            aria-label="Sledeći novitet"
-            onClick={next}
-            className="absolute right-2 top-[42%] z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-lg leading-none text-brown-soft shadow-sm ring-1 ring-black/5"
-          >
-            ›
-          </button>
-        </>
+        <div className="flex justify-center gap-1.5 bg-rose/15 pb-3">
+          {items.map((item, i) => (
+            <button
+              key={item.id}
+              type="button"
+              aria-label={`Novitet ${i + 1}`}
+              onClick={() => setIndex(i)}
+              className={`h-2 w-2 rounded-full transition ${
+                i === index ? "bg-rose" : "bg-brown-soft/25"
+              }`}
+            />
+          ))}
+        </div>
       )}
     </article>
   );
